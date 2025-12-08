@@ -13,6 +13,7 @@
  * Added support for parsing offsets from OpenDRIVE using optional offset transforms.
  * Added ad-rss type-stubs for the PythonAPI when building with RSS support
  * ROS2Native: Extended functionality and performance of ROS2 support
+ * Added Ubuntu 24.04 support
  
 ## CARLA 0.9.16
 
