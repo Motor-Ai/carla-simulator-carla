@@ -8,7 +8,8 @@
  * Fixed geom::Rotation::RotateVector() rotation directions of pitch and roll
  * Prepare server for multistream support and ROS2 client calls
  * Improved V2X sensor capabilities: send complex custom user-defined data, support V2I sensors not attached to a vehicle
-
+ * Added support for parsing offsets from OpenDRIVE using optional offset transforms.
+ 
 ## CARLA 0.9.16
 
  * Added NVIDIA Cosmos Transfer1 integration
