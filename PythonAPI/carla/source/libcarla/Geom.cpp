@@ -309,6 +309,8 @@ void export_geom() {
   .def_readwrite("offset_x", &cg::OffsetTransform::offset_x)
   .def_readwrite("offset_y", &cg::OffsetTransform::offset_y)
   .def_readwrite("offset_z", &cg::OffsetTransform::offset_z)
+  .def_readwrite("offset_cos_h", &cg::OffsetTransform::offset_cos_h)
+  .def_readwrite("offset_sin_h", &cg::OffsetTransform::offset_sin_h)
   .def("ApplyTransformation", &cg::OffsetTransform::ApplyTransformation)
   .def("__eq__", &cg::OffsetTransform::operator==)
   ;
