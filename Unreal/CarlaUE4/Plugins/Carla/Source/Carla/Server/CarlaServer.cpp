@@ -253,6 +253,18 @@ public:
   /**
    * @}
    */
+
+  /**
+   * @brief weather related calls
+   * @{
+   */
+   carla::rpc::Response<carla::rpc::WeatherParameters> call_get_weather_parameters() override;
+   carla::rpc::Response<void> call_set_weather_parameters(carla::rpc::WeatherParameters const &weather_parameters) override;
+  /**
+   * @}
+   */
+
+
   void OnClientDisconnected(std::shared_ptr<rpc::detail::server_session> server_session);
   void OnClientConnected(std::shared_ptr<rpc::detail::server_session> server_session);
   bool IsNextGameTickAllowed();
@@ -875,25 +887,14 @@ void FCarlaServer::FPimpl::BindActions()
   BIND_SYNC(get_weather_parameters) << [this]() -> R<cr::WeatherParameters>
   {
     REQUIRE_CARLA_EPISODE();
-    auto *Weather = Episode->GetWeather();
-    if (Weather == nullptr)
-    {
-      RESPOND_ERROR("internal error: unable to find weather");
-    }
-    return Weather->GetCurrentWeather();
+    return call_get_weather_parameters();
   };
 
   BIND_SYNC(set_weather_parameters) << [this](
       const cr::WeatherParameters &weather) -> R<void>
   {
     REQUIRE_CARLA_EPISODE();
-    auto *Weather = Episode->GetWeather();
-    if (Weather == nullptr)
-    {
-      RESPOND_ERROR("internal error: unable to find weather");
-    }
-    Weather->ApplyWeather(weather);
-    return R<void>::Success();
+    return call_set_weather_parameters(weather);
   };
   
   // -- IMUI Gravity ---------------------------------------------------------
@@ -3465,26 +3466,6 @@ carla::rpc::Response<carla::rpc::Actor> FCarlaServer::FPimpl::call_spawn_actor_w
   CarlaActor->SetAttachmentType(InAttachmentType);
   ParentCarlaActor->AddChildren(CarlaActor->GetActorId());
 
-  #if defined(WITH_ROS2)
-  auto ROS2 = carla::ros2::ROS2::GetInstance();
-  if (ROS2->IsEnabled())
-  {
-    FCarlaActor* CurrentActor = ParentCarlaActor;
-    while(CurrentActor)
-    {
-      for (const auto &Attr : CurrentActor->GetActorInfo()->Description.Variations)
-      {
-        if (Attr.Key == "ros_name")
-        {
-          const std::string value = std::string(TCHAR_TO_UTF8(*Attr.Value.Value));
-          ROS2->RegisterActorParent(static_cast<void*>(CarlaActor->GetActor()), static_cast<void*>(CurrentActor->GetActor()));
-        }
-      }
-      CurrentActor = Episode->FindCarlaActor(CurrentActor->GetParent());
-    }
-  }
-  #endif
-
   // Only is possible to attach if the actor has been really spawned and
   // is not in dormant state
   if(!ParentCarlaActor->IsDormant())
@@ -3712,6 +3693,27 @@ carla::rpc::Response<std::pair< bool , std::vector<carla::rpc::synchronization_w
   return ServerSync.GetSynchronizationWindowParticipantStates();
 }
 
+carla::rpc::Response<carla::rpc::WeatherParameters> FCarlaServer::FPimpl::call_get_weather_parameters()
+{
+  auto *Weather = Episode->GetWeather();
+  if (Weather == nullptr)
+  {
+    RESPOND_ERROR("internal error: unable to find weather");
+  }
+  return Weather->GetCurrentWeather();
+}
+
+carla::rpc::Response<void> FCarlaServer::FPimpl::call_set_weather_parameters(carla::rpc::WeatherParameters const &weather_parameters)
+{
+  auto *Weather = Episode->GetWeather();
+  if (Weather == nullptr)
+  {
+    RESPOND_ERROR("internal error: unable to find weather");
+  }
+  Weather->ApplyWeather(weather_parameters);
+  return R<void>::Success();
+}
+
 void FCarlaServer::FPimpl::OnClientConnected(std::shared_ptr<rpc::detail::server_session> server_session) {
   auto const RegisterResponse = ServerSync.RegisterSynchronizationParticipant(SynchronizationClientId());
   if ( RegisterResponse ) {
@@ -3866,9 +3868,8 @@ void FCarlaServer::RunSome(uint32 Milliseconds)
   Pimpl->Server.SyncRunFor(carla::time_duration::milliseconds(Milliseconds));
 }
 
-
-void FCarlaServer::SetROS2TopicVisibilityDefaultEnabled(bool _topic_visibility_default_enabled) {
-  Pimpl->StreamingServer.SetROS2TopicVisibilityDefaultEnabled(_topic_visibility_default_enabled);
+void FCarlaServer::SetROS2TopicVisibilityDefaultEnabled(bool topic_visibility_default_enabled) {
+  Pimpl->StreamingServer.SetROS2TopicVisibilityDefaultEnabled(topic_visibility_default_enabled);
 }
 
 void FCarlaServer::EnableSynchronousMode() {
@@ -4033,3 +4034,12 @@ carla::rpc::Response<std::pair< bool , std::vector<carla::rpc::synchronization_w
   return Pimpl->call_get_synchronization_window_status();
 }
 
+carla::rpc::Response<carla::rpc::WeatherParameters> FCarlaServer::call_get_weather_parameters()
+{
+  return Pimpl->call_get_weather_parameters();
+}
+
+carla::rpc::Response<void> FCarlaServer::call_set_weather_parameters(carla::rpc::WeatherParameters const &weather_parameters)
+{
+  return Pimpl->call_set_weather_parameters(weather_parameters);
+}
