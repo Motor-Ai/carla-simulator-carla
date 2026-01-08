@@ -10,7 +10,9 @@
 
 #include "carla/geom/Location.h"
 #include "carla/ros2/types/CoordinateSystemTransform.h"
-#include "geometry_msgs/msg/Point32.h"
+
+#include "carla/ros2/types/MsgExt.h"
+#include MSG_EXT(geometry_msgs/msg/Point32)
 
 namespace carla {
 namespace ros2 {

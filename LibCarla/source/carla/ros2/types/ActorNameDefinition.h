@@ -9,9 +9,12 @@
 #include <map>
 
 #include "carla/streaming/detail/Types.h"
-#include "carla/rpc/ObjectLabel.h"
-#include "carla_msgs/msg/CarlaActorInfo.h"
 #include "carla/ros2/ROS2TopicVisibilityDefaultMode.h"
+#include "carla/rpc/ObjectLabel.h"
+
+#include "carla/ros2/types/MsgExt.h"
+#include MSG_EXT(carla_msgs/msg/CarlaActorInfo)
+
 
 namespace carla {
 namespace ros2 {

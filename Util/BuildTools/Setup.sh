@@ -990,11 +990,24 @@ fi
 # ==============================================================================
 # -- Download Fast DDS and dependencies ----------------------------------------
 # ==============================================================================
+CURRENT_VERSION=$(lsb_release -rs)
+if dpkg --compare-versions "$CURRENT_VERSION" ge "24.04"; then
+  FAST_DDS_LIB_VERSION=v3.2.3
+  FOONATHAN_MEMORY_VENDOR_VERSION=v1.3.2
+  FAST_CDR_MAJOR_MINOR_VERSION=v2.3
+  FAST_DDS_VERSION_MAJOR=3
+else
+  FAST_DDS_LIB_VERSION=v2.11.2
+  FOONATHAN_MEMORY_VENDOR_VERSION=v1.3.2
+  FAST_CDR_MAJOR_MINOR_VERSION=v1
+  FAST_DDS_VERSION_MAJOR=2
+fi
 
 FASTDDS_BASENAME=fast-dds
 FASTDDS_INSTALL_DIR=${PWD}/${FASTDDS_BASENAME}-install
 FASTDDS_INCLUDE=${FASTDDS_INSTALL_DIR}/include
 FASTDDS_LIB=${FASTDDS_INSTALL_DIR}/lib
+
 if ${USE_ROS2} ; then
 
   if [[ -d ${FASTDDS_INSTALL_DIR} ]] ; then
@@ -1007,9 +1020,8 @@ if ${USE_ROS2} ; then
     FOONATHAN_MEMORY_VENDOR_BASENAME=foonathan-memory-vendor
     FOONATHAN_MEMORY_VENDOR_SOURCE_DIR=${PWD}/${FOONATHAN_MEMORY_VENDOR_BASENAME}-source
     FOONATHAN_MEMORY_VENDOR_REPO="https://github.com/eProsima/foonathan_memory_vendor.git"
-    FOONATHAN_MEMORY_VENDOR_BRANCH=v1.3.2
 
-    git clone --depth 1 --branch ${FOONATHAN_MEMORY_VENDOR_BRANCH} ${FOONATHAN_MEMORY_VENDOR_REPO} ${FOONATHAN_MEMORY_VENDOR_SOURCE_DIR}
+    git clone --depth 1 --branch ${FOONATHAN_MEMORY_VENDOR_VERSION} ${FOONATHAN_MEMORY_VENDOR_REPO} ${FOONATHAN_MEMORY_VENDOR_SOURCE_DIR}
 
     mkdir -p ${FOONATHAN_MEMORY_VENDOR_SOURCE_DIR}/build
     pushd ${FOONATHAN_MEMORY_VENDOR_SOURCE_DIR}/build >/dev/null
@@ -1028,9 +1040,8 @@ if ${USE_ROS2} ; then
     FAST_DDS_LIB_BASENAME=fast-dds-lib
     FAST_DDS_LIB_SOURCE_DIR=${PWD}/${FAST_DDS_LIB_BASENAME}-source
     FAST_DDS_LIB_REPO="https://github.com/eProsima/Fast-DDS.git"
-    FAST_DDS_LIB_BRANCH=v2.11.2
 
-    git clone --recurse-submodules --depth 1 --branch ${FAST_DDS_LIB_BRANCH} ${FAST_DDS_LIB_REPO} ${FAST_DDS_LIB_SOURCE_DIR}
+    git clone --recurse-submodules --depth 1 --branch ${FAST_DDS_LIB_VERSION} ${FAST_DDS_LIB_REPO} ${FAST_DDS_LIB_SOURCE_DIR}
 
     # copy OpenSSL from UE4
     cp -r ${UE4_ROOT}/Engine/Source/ThirdParty/OpenSSL/1.1.1c/include/Linux/x86_64-unknown-linux-gnu/* ${FASTDDS_INCLUDE}
@@ -1069,6 +1080,7 @@ if ${USE_ROS2} ; then
       -DTHIRDPARTY_TinyXML2=FORCE \
       -DSQLITE3_SUPPORT=OFF \
       -DOPENSSL_FOUND:BOOL=ON \
+      -DFASTDDS_STATISTICS=ON \
       -DOPENSSL_INCLUDE_DIR:FILEPATH=${FASTDDS_INCLUDE} \
       -DOPENSSL_SSL_LIBRARY:FILEPATH=${FASTDDS_LIB}/libssl.a \
       -DOPENSSL_CRYPTO_LIBRARY:FILEPATH=${FASTDDS_LIB}/libcrypto.a \
@@ -1159,6 +1171,8 @@ if (CMAKE_BUILD_TYPE STREQUAL "ros2")
   set(FASTDDS_INCLUDE_PATH "${FASTDDS_INCLUDE}")
   set(FASTDDS_LIB_PATH "${FASTDDS_LIB}")
   set(FASTDDS_LIBRARIES "fastrtps" "fastcdr")
+  set(FAST_CDR_MAJOR_MINOR_VERSION "${FAST_CDR_MAJOR_MINOR_VERSION}")
+  set(FAST_DDS_VERSION_MAJOR "${FAST_DDS_VERSION_MAJOR}")  
 endif ()
 
 EOL

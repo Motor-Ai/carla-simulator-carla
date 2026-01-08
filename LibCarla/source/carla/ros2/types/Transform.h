@@ -7,8 +7,10 @@
 #include "carla/geom/Transform.h"
 #include "carla/ros2/types/CoordinateSystemTransform.h"
 #include "carla/ros2/types/Quaternion.h"
-#include "geometry_msgs/msg/PoseWithCovariance.h"
-#include "geometry_msgs/msg/Transform.h"
+
+#include "carla/ros2/types/MsgExt.h"
+#include MSG_EXT(geometry_msgs/msg/PoseWithCovariance)
+#include MSG_EXT(geometry_msgs/msg/Transform)
 
 namespace carla {
 namespace ros2 {

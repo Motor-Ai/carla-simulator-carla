@@ -12,7 +12,9 @@
 #include "carla/ros2/types/VehicleControl.h"
 #include "carla/rpc/VehiclePhysicsControl.h"
 #include "carla/sensor/data/ActorDynamicState.h"
-#include "carla_msgs/msg/CarlaEgoVehicleStatus.h"
+
+#include "carla/ros2/types/MsgExt.h"
+#include MSG_EXT(carla_msgs/msg/CarlaEgoVehicleStatus)
 
 namespace carla {
 namespace ros2 {

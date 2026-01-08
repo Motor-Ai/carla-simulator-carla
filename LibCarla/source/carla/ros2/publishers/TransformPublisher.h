@@ -7,7 +7,7 @@
 #include "carla/ros2/publishers/PublisherBase.h"
 
 #include "carla/ros2/types/Transform.h"
-#include "tf2_msgs/msg/TFMessagePubSubTypes.h"
+#include MSG_EXT(tf2_msgs/msg/TFMessagePubSubTypes)
 
 namespace carla {
 namespace ros2 {

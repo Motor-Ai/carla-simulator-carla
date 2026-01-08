@@ -7,9 +7,12 @@
 #include <memory>
 #include <vector>
 
-#include "ackermann_msgs/msg/AckermannDriveStampedPubSubTypes.h"
 #include "carla/ros2/subscribers/SubscriberBase.h"
 #include "carla/ros2/types/VehicleActorDefinition.h"
+
+
+#include "carla/ros2/types/MsgExt.h"
+#include MSG_EXT(ackermann_msgs/msg/AckermannDriveStampedPubSubTypes)
 
 namespace carla {
 namespace ros2 {

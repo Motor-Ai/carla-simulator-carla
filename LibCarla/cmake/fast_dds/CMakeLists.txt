@@ -9,14 +9,15 @@ foreach(dir "" "types/" )
   install(FILES ${libcarla_carla_ros2_public_headers} DESTINATION include/carla/ros2/${dir})
 endforeach()
 
-file(GLOB subdirs RELATIVE "${libcarla_source_path}/carla/ros2/fastdds" "${libcarla_source_path}/carla/ros2/fastdds/*")
+# FastCDR message and service files
+file(GLOB subdirs RELATIVE "${libcarla_source_path}/carla/ros2/fastcdr/${FAST_CDR_MAJOR_MINOR_VERSION}" "${libcarla_source_path}/carla/ros2/fastcdr/${FAST_CDR_MAJOR_MINOR_VERSION}/*")
 foreach(typedir "msg" "srv")
   foreach(dir ${subdirs})
-    if(IS_DIRECTORY "${libcarla_source_path}/carla/ros2/fastdds/${dir}/${typedir}")
+    if(IS_DIRECTORY "${libcarla_source_path}/carla/ros2/fastcdr/${FAST_CDR_MAJOR_MINOR_VERSION}/${dir}/${typedir}")
       file(GLOB libcarla_carla_ros2_types_${dir}_headers
-      "${libcarla_source_path}/carla/ros2/fastdds/${dir}/${typedir}/*.h"
-      "${libcarla_source_path}/carla/ros2/fastdds/${dir}/${typedir}/*.hpp"
-      "${libcarla_source_path}/carla/ros2/fastdds/${dir}/${typedir}/*.ipp"
+      "${libcarla_source_path}/carla/ros2/fastcdr/${FAST_CDR_MAJOR_MINOR_VERSION}/${dir}/${typedir}/*.h"
+      "${libcarla_source_path}/carla/ros2/fastcdr/${FAST_CDR_MAJOR_MINOR_VERSION}/${dir}/${typedir}/*.hpp"
+      "${libcarla_source_path}/carla/ros2/fastcdr/${FAST_CDR_MAJOR_MINOR_VERSION}/${dir}/${typedir}/*.ipp"
       )
       install(FILES ${libcarla_carla_ros2_types_${dir}_headers} DESTINATION include/carla/ros2/ros_types/${dir}/${typedir}/)
     endif()
@@ -44,17 +45,18 @@ foreach(ros2_dir
   list(APPEND libcarla_fastdds_sources ${sources})
 endforeach()
 
-file(GLOB msg_sources "${libcarla_source_path}/carla/ros2/fastdds/*/msg/*.cxx")
+file(GLOB msg_sources "${libcarla_source_path}/carla/ros2/fastcdr/${FAST_CDR_MAJOR_MINOR_VERSION}/*/msg/*.cxx")
 list(APPEND libcarla_fastdds_sources ${msg_sources})
 
-file(GLOB srv_sources "${libcarla_source_path}/carla/ros2/fastdds/*/srv/*.cxx")
+file(GLOB srv_sources "${libcarla_source_path}/carla/ros2/fastcdr/${FAST_CDR_MAJOR_MINOR_VERSION}/*/srv/*.cxx")
 list(APPEND libcarla_fastdds_sources ${srv_sources})
 
 # ==============================================================================
 # Create targets for debug and release in the same build type.
 # ==============================================================================
 set(libcarla_fastdds_include_directories
-    # first the fastdds local folder allowing potential overrides of header files
+    # first the fastcdr local folder allowing overrides of header files for allowing vectors with proprietary allocators!
+    "${libcarla_source_path}/carla/ros2/fastcdr/${FAST_CDR_MAJOR_MINOR_VERSION}"
     "${libcarla_source_path}/carla/ros2/fastdds"
     "${BOOST_INCLUDE_PATH}"
     "${RPCLIB_INCLUDE_PATH}"
@@ -79,7 +81,7 @@ if (LIBCARLA_BUILD_RELEASE)
   set_target_properties(carla_fastdds PROPERTIES COMPILE_FLAGS
     "-fexceptions ${CMAKE_CXX_FLAGS_RELEASE}")
   target_compile_definitions(carla_fastdds PUBLIC 
-    WITH_ROS2 CARLA_SERVER_BUILD)
+    WITH_ROS2 CARLA_SERVER_BUILD FAST_DDS_VERSION_MAJOR=${FAST_DDS_VERSION_MAJOR})
 endif()
 
 if (LIBCARLA_BUILD_DEBUG)
@@ -93,5 +95,5 @@ if (LIBCARLA_BUILD_DEBUG)
   set_target_properties(carla_fastdds_debug PROPERTIES COMPILE_FLAGS
     "-fexceptions ${CMAKE_CXX_FLAGS_DEBUG}")
   target_compile_definitions(carla_fastdds_debug PUBLIC 
-    WITH_ROS2 CARLA_SERVER_BUILD BOOST_ASIO_ENABLE_BUFFER_DEBUGGING)
+    WITH_ROS2 CARLA_SERVER_BUILD  FAST_DDS_VERSION_MAJOR=${FAST_DDS_VERSION_MAJOR} BOOST_ASIO_ENABLE_BUFFER_DEBUGGING)
 endif()

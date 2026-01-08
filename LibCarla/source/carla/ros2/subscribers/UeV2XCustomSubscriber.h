@@ -9,7 +9,7 @@
 
 #include "carla/ros2/subscribers/SubscriberBase.h"
 #include "carla/ros2/types/SensorActorDefinition.h"
-#include "carla_msgs/msg/CarlaV2XByteArrayPubSubTypes.h"
+#include MSG_EXT(carla_msgs/msg/CarlaV2XByteArrayPubSubTypes)
 
 namespace carla {
 namespace ros2 {

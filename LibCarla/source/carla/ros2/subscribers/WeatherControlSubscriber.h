@@ -9,7 +9,7 @@
 
 #include "carla/ros2/subscribers/SubscriberBase.h"
 #include "carla/rpc/RpcServerInterface.h"
-#include "carla_msgs/msg/CarlaWeatherParametersPubSubTypes.h"
+#include MSG_EXT(carla_msgs/msg/CarlaWeatherParametersPubSubTypes)
 
 namespace carla {
 namespace ros2 {

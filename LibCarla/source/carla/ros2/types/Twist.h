@@ -7,7 +7,9 @@
 #include "carla/geom/Vector3D.h"
 #include "carla/ros2/types/AngularVelocity.h"
 #include "carla/ros2/types/Speed.h"
-#include "geometry_msgs/msg/TwistWithCovariance.h"
+
+#include "carla/ros2/types/MsgExt.h"
+#include MSG_EXT(geometry_msgs/msg/TwistWithCovariance)
 
 namespace carla {
 namespace ros2 {

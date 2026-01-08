@@ -7,7 +7,9 @@
 #include "carla/geom/Math.h"
 #include "carla/geom/Quaternion.h"
 #include "carla/geom/Velocity.h"
-#include "std_msgs/msg/Float32.h"
+
+#include "carla/ros2/types/MsgExt.h"
+#include MSG_EXT(std_msgs/msg/Float32)
 
 namespace carla {
 namespace ros2 {

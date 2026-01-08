@@ -18,8 +18,8 @@
 #include "carla/rpc/VehiclePhysicsControl.h"
 #include "carla/rpc/EnvironmentObject.h"
 #include "carla/sensor/data/ActorDynamicState.h"
-#include "derived_object_msgs/msg/Object.h"
-#include "derived_object_msgs/msg/ObjectWithCovariance.h"
+#include MSG_EXT(derived_object_msgs/msg/Object)
+#include MSG_EXT(derived_object_msgs/msg/ObjectWithCovariance)
 
 
 namespace carla {

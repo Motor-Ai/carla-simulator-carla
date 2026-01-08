@@ -9,7 +9,7 @@
 
 #include "carla/ros2/subscribers/SubscriberBaseSynchronizationClient.h"
 #include "carla/rpc/RpcServerInterface.h"
-#include "carla_msgs/msg/CarlaControlPubSubTypes.h"
+#include MSG_EXT(carla_msgs/msg/CarlaControlPubSubTypes)
 
 namespace carla {
 namespace ros2 {

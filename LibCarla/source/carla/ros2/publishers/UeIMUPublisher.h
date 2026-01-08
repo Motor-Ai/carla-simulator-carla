@@ -6,8 +6,8 @@
 
 #include "carla/ros2/publishers/UePublisherBaseSensor.h"
 #include "carla/sensor/s11n/IMUSerializer.h"
-#include "geometry_msgs/msg/Accel.h"
-#include "sensor_msgs/msg/ImuPubSubTypes.h"
+#include MSG_EXT(geometry_msgs/msg/Accel)
+#include MSG_EXT(sensor_msgs/msg/ImuPubSubTypes)
 
 namespace carla {
 namespace ros2 {

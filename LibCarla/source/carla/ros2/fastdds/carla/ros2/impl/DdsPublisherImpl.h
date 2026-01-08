@@ -14,14 +14,25 @@
 #include <fastdds/dds/topic/Topic.hpp>
 #include <fastdds/dds/topic/TypeSupport.hpp>
 
-#include "builtin_interfaces/msg/Time.h"
 #include "carla/ros2/impl/DdsDomainParticipantImpl.h"
 #include "carla/ros2/impl/DdsQoS.h"
 #include "carla/ros2/impl/DdsReturnCode.h"
 #include "carla/ros2/publishers/PublisherInterface.h"
 
+#include "carla/ros2/types/MsgExt.h"
+#include MSG_EXT(builtin_interfaces/msg/Time)
+
+
 namespace carla {
 namespace ros2 {
+
+
+#if FASTDDS_VERSION_MAJOR >= 3
+#define PointFieldTypePrefix(x) sensor_msgs::msg::PointField_Constants::x
+#else
+# define PointFieldTypePrefix(x) sensor_msgs::msg::PointField__##x
+#endif
+
 
 template <typename MESSAGE_TYPE, typename MESSAGE_PUB_TYPE>
 class DdsPublisherImpl : public PublisherInterface, eprosima::fastdds::dds::DataWriterListener {
@@ -56,7 +67,7 @@ public:
     auto pubqos = PublisherQos(qos);
     auto wqos = DataWriterQos(qos);
     auto tqos = TopicQos(qos);
-    wqos.endpoint().history_memory_policy = eprosima::fastrtps::rtps::PREALLOCATED_WITH_REALLOC_MEMORY_MODE;
+    wqos.endpoint().history_memory_policy = FastRtpsNamespace::rtps::PREALLOCATED_WITH_REALLOC_MEMORY_MODE;
     return InitInternal(domain_participant, topic_name, tqos, pubqos, wqos);
   }
 
@@ -70,13 +81,13 @@ public:
   bool Publish() override {
     if (_message_updated) {
       carla::log_verbose("DdsPublisherImpl[", _topic->get_name(), "]::Publishing() updated message");
-      eprosima::fastrtps::rtps::InstanceHandle_t instance_handle;
+      FastRtpsNamespace::rtps::InstanceHandle_t instance_handle;
       auto rcode = _datawriter->write(&_message, instance_handle);
-      if (rcode == eprosima::fastrtps::types::ReturnCode_t::ReturnCodeValue::RETCODE_OK) {
+      if (rcode == FastDdsReturnCodePrefix::RETCODE_OK) {
         _message_updated = false;
       } else {
         carla::log_error("DdsPublisherImpl[", _topic->get_name(), "]::Publish() Failed to write data; Error ",
-                         std::to_string(rcode));
+                         return_code_string(rcode));
       }
       carla::log_verbose("DdsPublisherImpl[", _topic->get_name(), "]::Publishing() done");
     }
@@ -123,6 +134,14 @@ public:
   }
 
 private:
+  std::string get_type_name() const {
+#if FASTDDS_VERSION_MAJOR >= 3
+    return _type->get_name();
+#else
+    return _type->getName();
+#endif
+  }
+
   bool InitInternal(std::shared_ptr<DdsDomainParticipantImpl> domain_participant, std::string topic_name,
                     eprosima::fastdds::dds::TopicQos const& tqos, eprosima::fastdds::dds::PublisherQos const& pubqos,
                     eprosima::fastdds::dds::DataWriterQos const& wqos) {
@@ -135,7 +154,7 @@ private:
 
     _participant = domain_participant->GetDomainParticipant();
     if (_participant == nullptr) {
-      carla::log_error("DdsPublisherImpl[", _type->getName(), "]::Init() Invalid Participant");
+      carla::log_error("DdsPublisherImpl[", get_type_name(), "]::Init() Invalid Participant");
       return false;
     }
 
@@ -143,13 +162,13 @@ private:
 
     _publisher = _participant->create_publisher(pubqos);
     if (_publisher == nullptr) {
-      carla::log_error("DdsPublisherImpl[", _type->getName(), "]::Init() Failed to create Publisher");
+      carla::log_error("DdsPublisherImpl[", get_type_name(), "]::Init() Failed to create Publisher");
       return false;
     }
 
-    _topic = _participant->create_topic(topic_name, _type->getName(), tqos);
+    _topic = _participant->create_topic(topic_name, get_type_name(), tqos);
     if (_topic == nullptr) {
-      carla::log_error("DdsPublisherImpl[", _type->getName(), "]::Init() Failed to create Topic for ", topic_name);
+      carla::log_error("DdsPublisherImpl[", get_type_name(), "]::Init() Failed to create Topic for ", topic_name);
       return false;
     }
 

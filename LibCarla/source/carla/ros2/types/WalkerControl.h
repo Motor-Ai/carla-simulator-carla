@@ -7,7 +7,7 @@
 #include "carla/ros2/types/Timestamp.h"
 #include "carla/rpc/WalkerControl.h"
 #include "carla/sensor/data/ActorDynamicState.h"
-#include "carla_msgs/msg/CarlaWalkerControl.h"
+#include MSG_EXT(carla_msgs/msg/CarlaWalkerControl)
 
 namespace carla {
 namespace ros2 {

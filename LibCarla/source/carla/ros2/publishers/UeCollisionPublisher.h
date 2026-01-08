@@ -6,7 +6,7 @@
 
 #include "carla/ros2/publishers/UePublisherBaseSensor.h"
 #include "carla/sensor/s11n/CollisionEventSerializer.h"
-#include "carla_msgs/msg/CarlaCollisionEventPubSubTypes.h"
+#include MSG_EXT(carla_msgs/msg/CarlaCollisionEventPubSubTypes)
 
 namespace carla {
 namespace ros2 {

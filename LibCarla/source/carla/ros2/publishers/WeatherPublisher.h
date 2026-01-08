@@ -6,7 +6,7 @@
 
 #include "carla/ros2/publishers/PublisherBase.h"
 #include "carla/rpc/RpcServerInterface.h"
-#include "carla_msgs/msg/CarlaWeatherParametersPubSubTypes.h"
+#include MSG_EXT(carla_msgs/msg/CarlaWeatherParametersPubSubTypes)
 
 namespace carla {
 namespace ros2 {

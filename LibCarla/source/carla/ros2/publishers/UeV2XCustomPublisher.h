@@ -9,7 +9,7 @@
 #include "carla/ros2/publishers/UePublisherBaseSensor.h"
 #include "carla/ros2/subscribers/UeV2XCustomSubscriber.h"
 #include "carla/sensor/data/V2XEvent.h"
-#include "carla_msgs/msg/CarlaV2XCustomDataListPubSubTypes.h"
+#include MSG_EXT(carla_msgs/msg/CarlaV2XCustomDataListPubSubTypes)
 
 namespace carla {
 namespace ros2 {

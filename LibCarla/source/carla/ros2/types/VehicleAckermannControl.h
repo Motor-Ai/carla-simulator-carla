@@ -4,10 +4,12 @@
 
 #pragma once
 
-#include "ackermann_msgs/msg/AckermannDriveStamped.h"
 #include "carla/ros2/types/Timestamp.h"
 #include "carla/rpc/VehicleAckermannControl.h"
 #include "carla/sensor/data/ActorDynamicState.h"
+
+#include "carla/ros2/types/MsgExt.h"
+#include MSG_EXT(ackermann_msgs/msg/AckermannDriveStamped)
 
 namespace carla {
 namespace ros2 {

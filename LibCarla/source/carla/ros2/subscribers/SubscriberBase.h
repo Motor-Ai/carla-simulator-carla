@@ -9,6 +9,7 @@
 
 #include "carla/ros2/ROS2NameRecord.h"
 #include "carla/ros2/ROS2QoS.h"
+#include "carla/ros2/types/MsgExt.h"
 
 namespace carla {
 namespace ros2 {

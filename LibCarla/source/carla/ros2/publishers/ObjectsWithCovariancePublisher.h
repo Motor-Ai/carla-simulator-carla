@@ -6,7 +6,7 @@
 
 #include "carla/ros2/publishers/PublisherBaseSensor.h"
 #include "carla/ros2/types/Object.h"
-#include "derived_object_msgs/msg/ObjectWithCovarianceArrayPubSubTypes.h"
+#include MSG_EXT(derived_object_msgs/msg/ObjectWithCovarianceArrayPubSubTypes)
 
 namespace carla {
 namespace ros2 {

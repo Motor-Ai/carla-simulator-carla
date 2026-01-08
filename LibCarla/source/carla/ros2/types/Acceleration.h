@@ -6,7 +6,9 @@
 
 #include "carla/geom/Acceleration.h"
 #include "carla/ros2/types/CoordinateSystemTransform.h"
-#include "geometry_msgs/msg/Accel.h"
+
+#include "carla/ros2/types/MsgExt.h"
+#include MSG_EXT(geometry_msgs/msg/Accel)
 
 namespace carla {
 namespace ros2 {

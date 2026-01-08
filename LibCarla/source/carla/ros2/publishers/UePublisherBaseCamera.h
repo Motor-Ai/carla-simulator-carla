@@ -7,8 +7,8 @@
 #include "carla/Exception.h"
 #include "carla/ros2/publishers/UePublisherBaseSensor.h"
 #include "carla/sensor/s11n/ImageSerializer.h"
-#include "sensor_msgs/msg/CameraInfoPubSubTypes.h"
-#include "sensor_msgs/msg/ImagePubSubTypes.h"
+#include MSG_EXT(sensor_msgs/msg/CameraInfoPubSubTypes)
+#include MSG_EXT(sensor_msgs/msg/ImagePubSubTypes)
 
 namespace carla {
 namespace ros2 {
@@ -61,6 +61,8 @@ public:
                         const carla::SharedBufferView buffer_view) override;
 
 protected:
+  sensor_msgs::msg::CameraInfo CreateCameraInfo(uint32_t height, uint32_t width, double fov);
+
   void UpdateCameraInfo(const builtin_interfaces::msg::Time &stamp, sensor_msgs::msg::CameraInfo const &camera_info);
   void UpdateImageHeader(const builtin_interfaces::msg::Time &stamp, sensor_msgs::msg::CameraInfo const &camera_info);
 

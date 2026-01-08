@@ -7,7 +7,7 @@
 #include "carla/ros2/publishers/ObjectsPublisher.h"
 #include "carla/ros2/publishers/PublisherInterface.h"
 #include "carla/ros2/types/Object.h"
-#include "derived_object_msgs/msg/ObjectPubSubTypes.h"
+#include MSG_EXT(derived_object_msgs/msg/ObjectPubSubTypes)
 
 namespace carla {
 namespace ros2 {

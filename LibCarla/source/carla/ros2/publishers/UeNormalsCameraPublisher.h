@@ -8,8 +8,8 @@
 #include <vector>
 
 #include "carla/ros2/publishers/UePublisherBaseCamera.h"
-#include "sensor_msgs/msg/CameraInfoPubSubTypes.h"
-#include "sensor_msgs/msg/ImagePubSubTypes.h"
+#include MSG_EXT(sensor_msgs/msg/CameraInfoPubSubTypes)
+#include MSG_EXT(sensor_msgs/msg/ImagePubSubTypes)
 
 namespace carla {
 namespace ros2 {

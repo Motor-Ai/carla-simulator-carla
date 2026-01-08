@@ -5,7 +5,7 @@
 #pragma once
 
 #include "carla/ros2/publishers/PublisherBase.h"
-#include "carla_msgs/msg/CarlaActorListPubSubTypes.h"
+#include MSG_EXT(carla_msgs/msg/CarlaActorListPubSubTypes)
 
 namespace carla {
 namespace ros2 {

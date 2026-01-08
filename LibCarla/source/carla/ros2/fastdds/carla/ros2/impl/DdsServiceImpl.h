@@ -15,6 +15,7 @@
 #include <fastdds/dds/subscriber/Subscriber.hpp>
 #include <fastdds/dds/topic/Topic.hpp>
 #include <fastdds/dds/topic/TypeSupport.hpp>
+#include <fastdds/rtps/common/WriteParams.hpp>
 
 #include "carla/Logging.h"
 #include "carla/ros2/impl/DdsDomainParticipantImpl.h"
@@ -84,8 +85,13 @@ public:
     auto topic_qos = eprosima::fastdds::dds::TOPIC_QOS_DEFAULT;
     topic_qos.history().kind = eprosima::fastdds::dds::KEEP_ALL_HISTORY_QOS;
     topic_qos.reliability().kind = eprosima::fastdds::dds::RELIABLE_RELIABILITY_QOS;
+#if FASTDDS_VERSION_MAJOR >= 3
+    auto const request_type_name = _request_type->get_name();
+#else
+    auto const request_type_name = _request_type->getName();
+#endif
     _request_topic =
-        _participant->create_topic(request_name, _request_type->getName(), topic_qos);
+        _participant->create_topic(request_name, request_type_name, topic_qos);
     if (_request_topic == nullptr) {
       carla::log_error("DdsServiceImpl[", topic_name, "]::Init(): Failed to create Request Topic");
       return false;
@@ -110,13 +116,18 @@ public:
 
     auto response_name = topic_name + "Reply";
     response_name.replace(0u, 2u, "rr");
-    if (_resonse_type == nullptr) {
+    if (_response_type == nullptr) {
       carla::log_error("DdsServiceImpl[", topic_name, "]::Init(): Invalid Response TypeSupport");
       return false;
     }
-    _resonse_type.register_type(_participant);
+    _response_type.register_type(_participant);
+#if FASTDDS_VERSION_MAJOR >= 3
+    auto const response_type_name = _response_type->get_name();
+#else
+    auto const response_type_name = _response_type->getName();
+#endif
     _response_topic =
-        _participant->create_topic(response_name, _resonse_type->getName(), topic_qos);
+        _participant->create_topic(response_name, response_type_name, topic_qos);
     if (_response_topic == nullptr) {
       carla::log_error("DdsServiceImpl[", topic_name, "]::Init(): Failed to create Response Topic");
       return false;
@@ -129,7 +140,7 @@ public:
     }
 
     auto writer_qos = eprosima::fastdds::dds::DATAWRITER_QOS_DEFAULT;
-    writer_qos.endpoint().history_memory_policy = eprosima::fastrtps::rtps::PREALLOCATED_WITH_REALLOC_MEMORY_MODE;
+    writer_qos.endpoint().history_memory_policy = FastRtpsNamespace::rtps::PREALLOCATED_WITH_REALLOC_MEMORY_MODE;
     writer_qos.history().kind = eprosima::fastdds::dds::KEEP_ALL_HISTORY_QOS;
     writer_qos.durability().kind = eprosima::fastdds::dds::TRANSIENT_LOCAL_DURABILITY_QOS;
     writer_qos.reliability().kind = eprosima::fastdds::dds::RELIABLE_RELIABILITY_QOS;
@@ -151,7 +162,7 @@ public:
     eprosima::fastdds::dds::SampleInfo info;
     REQUEST_TYPE request;
     auto rcode = reader->take_next_sample(&request, &info);
-    if (rcode == eprosima::fastrtps::types::ReturnCode_t::ReturnCodeValue::RETCODE_OK) {
+    if (rcode == FastDdsReturnCodePrefix::RETCODE_OK) {
       if (eprosima::fastdds::dds::InstanceStateKind::ALIVE_INSTANCE_STATE == info.instance_state) {
         carla::log_debug("DdsServiceImpl[", _request_topic->get_name(), "]::on_data_available(): Incoming request ");
         _incoming_requests.push_back({request, info.sample_identity});
@@ -161,7 +172,7 @@ public:
       }
     } else {
       carla::log_error("DdsServiceImpl[", _request_topic->get_name(), "]::on_data_available(): Error ",
-                       std::to_string(rcode));
+                       return_code_string(rcode));
     }
   }
 
@@ -176,13 +187,13 @@ public:
       RESPONSE_TYPE response = _callback(incoming_request._request);
       carla::log_debug("DdsServiceImpl[", _response_topic->get_name(), "]::CheckRequest(): Callback returned");
 
-      eprosima::fastrtps::rtps::WriteParams write_params;
+      FastRtpsNamespace::rtps::WriteParams write_params;
       write_params.related_sample_identity() = incoming_request._request_identity;
       auto rcode = _datawriter->write(reinterpret_cast<void*>(&response), write_params);
-      if (rcode != bool(eprosima::fastrtps::types::ReturnCode_t::ReturnCodeValue::RETCODE_OK)) {
+      if (rcode != bool(FastDdsReturnCodePrefix::RETCODE_OK)) {
         // strange: getting error while the result is actually sent out
         carla::log_debug("DdsServiceImpl[", _response_topic->get_name(),
-                         "]::CheckRequest() Failed to write data; Error ", std::to_string(rcode));
+                         "]::CheckRequest() Failed to write data; Error ", return_code_string(rcode));
       }
       carla::log_debug("DdsServiceImpl[", _response_topic->get_name(), "]::CheckRequest() Response sent");
 
@@ -198,7 +209,7 @@ private:
   eprosima::fastdds::dds::Subscriber* _subscriber{nullptr};
   eprosima::fastdds::dds::DataReader* _datareader{nullptr};
 
-  eprosima::fastdds::dds::TypeSupport _resonse_type{new RESPONSE_PUB_TYPE()};
+  eprosima::fastdds::dds::TypeSupport _response_type{new RESPONSE_PUB_TYPE()};
   eprosima::fastdds::dds::Topic* _response_topic{nullptr};
   eprosima::fastdds::dds::Publisher* _publisher{nullptr};
   eprosima::fastdds::dds::DataWriter* _datawriter{nullptr};
@@ -207,7 +218,7 @@ private:
 
   struct IncomingRequest {
     REQUEST_TYPE _request{};
-    eprosima::fastrtps::rtps::SampleIdentity _request_identity;
+    FastRtpsNamespace::rtps::SampleIdentity _request_identity;
   };
   std::deque<IncomingRequest> _incoming_requests;
 };

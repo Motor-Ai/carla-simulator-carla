@@ -5,7 +5,7 @@
 #pragma once
 
 #include "carla/ros2/publishers/UePublisherBaseSensor.h"
-#include "sensor_msgs/msg/PointCloud2PubSubTypes.h"
+#include MSG_EXT(sensor_msgs/msg/PointCloud2PubSubTypes)
 
 namespace carla {
 namespace ros2 {

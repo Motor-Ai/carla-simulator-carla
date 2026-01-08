@@ -11,7 +11,7 @@
 #include "carla/ros2/types/Transform.h"
 #include "carla/ros2/types/WalkerActorDefinition.h"
 #include "carla/sensor/data/ActorDynamicState.h"
-#include "nav_msgs/msg/OdometryPubSubTypes.h"
+#include MSG_EXT(nav_msgs/msg/OdometryPubSubTypes)
 
 namespace carla {
 namespace ros2 {

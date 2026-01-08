@@ -6,7 +6,7 @@
 
 #include "carla/ros2/publishers/UePublisherBaseCamera.h"
 #include "carla/sensor/s11n/DVSEventArraySerializer.h"
-#include "sensor_msgs/msg/PointCloud2PubSubTypes.h"
+#include MSG_EXT(sensor_msgs/msg/PointCloud2PubSubTypes)
 
 namespace carla {
 namespace ros2 {

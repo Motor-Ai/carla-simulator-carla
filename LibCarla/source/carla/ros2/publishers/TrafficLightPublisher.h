@@ -10,8 +10,8 @@
 #include "carla/ros2/types/Object.h"
 #include "carla/ros2/types/TrafficLightActorDefinition.h"
 #include "carla/sensor/data/ActorDynamicState.h"
-#include "carla_msgs/msg/CarlaTrafficLightInfoPubSubTypes.h"
-#include "carla_msgs/msg/CarlaTrafficLightStatusPubSubTypes.h"
+#include MSG_EXT(carla_msgs/msg/CarlaTrafficLightInfoPubSubTypes)
+#include MSG_EXT(carla_msgs/msg/CarlaTrafficLightStatusPubSubTypes)
 
 #define PUBLISH_INDIVIDUAL_TRAFFIC_LIGHT_DATA  0
 

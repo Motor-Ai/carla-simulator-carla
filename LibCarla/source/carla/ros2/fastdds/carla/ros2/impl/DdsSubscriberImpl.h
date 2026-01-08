@@ -95,13 +95,13 @@ public:
     MESSAGE_TYPE message;
     auto rcode = reader->take_next_sample(&message, &info);
     auto const publisher_guid = GetPublisherGuid(info.publication_handle);
-    if (rcode == eprosima::fastrtps::types::ReturnCode_t::ReturnCodeValue::RETCODE_OK) {
+    if (rcode == FastDdsReturnCodePrefix::RETCODE_OK) {
       AddMessage(publisher_guid, message);
       carla::log_debug("DdsSubscriberImpl[", _topic->get_name(), "]::on_data_available(): from client ", publisher_guid,
                        "and handle: ", info.publication_handle);
     } else {
       carla::log_error("DdsSubscriberImpl[", _topic->get_name(), "]::on_data_available(): Error ",
-                       std::to_string(rcode));
+                       return_code_string(rcode));
     }
   }
 
@@ -128,8 +128,13 @@ public:
       carla::log_error("DdsSubscriberImpl[", topic_name, "]::Init(): Failed to create Subscriber");
       return false;
     }
-
-    _topic = _participant->create_topic(topic_name, _type->getName(), tqos);
+    
+#if FASTDDS_VERSION_MAJOR >= 3
+    auto const type_name = _type->get_name();
+#else
+    auto const type_name = _type->getName();
+#endif
+    _topic = _participant->create_topic(topic_name, type_name, tqos);
     if (_topic == nullptr) {
       carla::log_error("DdsSubscriberImpl[", topic_name, "]::Init(): Failed to create Topic");
       return false;
@@ -150,7 +155,7 @@ public:
     auto insert_result = _instance_handles.insert({instance_handle, ""});
     if ( insert_result.second ) {
       // only perform the conversion from GUID to string once when inserted first time
-      eprosima::fastrtps::rtps::GUID_t guid(insert_result.first->first);
+      FastRtpsNamespace::rtps::GUID_t guid(insert_result.first->first);
       std::stringstream namestream;
       namestream << guid;
       insert_result.first->second = namestream.str();

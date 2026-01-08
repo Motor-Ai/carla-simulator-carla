@@ -6,7 +6,9 @@
 
 #include "carla/geom/Math.h"
 #include "carla/geom/Quaternion.h"
-#include "geometry_msgs/msg/Quaternion.h"
+
+#include "carla/ros2/types/MsgExt.h"
+#include MSG_EXT(geometry_msgs/msg/Quaternion)
 
 namespace carla {
 namespace ros2 {

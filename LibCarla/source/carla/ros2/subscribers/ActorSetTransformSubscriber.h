@@ -9,7 +9,7 @@
 
 #include "carla/ros2/subscribers/SubscriberBase.h"
 #include "carla/ros2/types/ActorDefinition.h"
-#include "geometry_msgs/msg/PosePubSubTypes.h"
+#include MSG_EXT(geometry_msgs/msg/PosePubSubTypes)
 
 namespace carla {
 namespace ros2 {

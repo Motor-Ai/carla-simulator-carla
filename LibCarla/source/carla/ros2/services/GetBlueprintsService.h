@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "carla/ros2/services/ServiceBase.h"
-#include "carla_msgs/srv/GetBlueprintsPubSubTypes.h"
+#include MSG_EXT(carla_msgs/srv/GetBlueprintsPubSubTypes)
 
 namespace carla {
 namespace ros2 {

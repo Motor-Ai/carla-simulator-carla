@@ -10,7 +10,9 @@
 #include "carla/ros2/types/Speed.h"
 #include "carla/ros2/types/Timestamp.h"
 #include "carla/ros2/types/Twist.h"
-#include "geometry_msgs/msg/AccelWithCovariance.h"
+
+#include "carla/ros2/types/MsgExt.h"
+#include MSG_EXT(geometry_msgs/msg/AccelWithCovariance)
 
 namespace carla {
 namespace ros2 {

@@ -6,8 +6,8 @@
 
 #include "carla/ros2/publishers/PublisherBaseSensor.h"
 #include "carla/rpc/ActorId.h"
-#include "carla_msgs/msg/CarlaTrafficLightInfoListPubSubTypes.h"
-#include "carla_msgs/msg/CarlaTrafficLightStatusListPubSubTypes.h"
+#include MSG_EXT(carla_msgs/msg/CarlaTrafficLightInfoListPubSubTypes)
+#include MSG_EXT(carla_msgs/msg/CarlaTrafficLightStatusListPubSubTypes)
 
 namespace carla {
 namespace ros2 {

@@ -5,8 +5,10 @@
 #pragma once
 
 #include "carla/geom/Vector3D.h"
-#include "geometry_msgs/msg/Point32.h"
-#include "geometry_msgs/msg/Vector3.h"
+
+#include "carla/ros2/types/MsgExt.h"
+#include MSG_EXT(geometry_msgs/msg/Point32)
+#include MSG_EXT(geometry_msgs/msg/Vector3)
 
 namespace carla {
 namespace ros2 {

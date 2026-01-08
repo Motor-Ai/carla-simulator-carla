@@ -7,7 +7,9 @@
 #include <cmath>
 
 #include "carla/rpc/WeatherParameters.h"
-#include "carla_msgs/msg/CarlaWeatherParameters.h"
+
+#include "carla/ros2/types/MsgExt.h"
+#include MSG_EXT(carla_msgs/msg/CarlaWeatherParameters)
 
 namespace carla {
 namespace ros2 {

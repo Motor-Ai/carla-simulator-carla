@@ -5,12 +5,12 @@
 #pragma once
 
 #include "carla/ros2/publishers/PublisherBase.h"
-#include "rosgraph_msgs/msg/ClockPubSubTypes.h"
+#include MSG_EXT(rosgraph_msgs/msg/ClockPubSubTypes)
 
 namespace carla {
 namespace ros2 {
 
-using ClockPublisherImpl = DdsPublisherImpl<rosgraph::msg::Clock, rosgraph::msg::ClockPubSubType>;
+using ClockPublisherImpl = DdsPublisherImpl<rosgraph_msgs::msg::Clock, rosgraph_msgs::msg::ClockPubSubType>;
 
 class ClockPublisher : public PublisherBase {
 public:

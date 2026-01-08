@@ -13,11 +13,11 @@
 #include "carla/rpc/VehiclePhysicsControl.h"
 #include "carla/rpc/RpcServerInterface.h"
 #include "carla/sensor/data/ActorDynamicState.h"
-#include "carla_msgs/msg/CarlaEgoVehicleStatusPubSubTypes.h"
-#include "carla_msgs/msg/CarlaEgoVehicleInfoPubSubTypes.h"
-#include "carla_msgs/msg/CarlaEgoVehicleTelemetryDataPubSubTypes.h"
-#include "nav_msgs/msg/OdometryPubSubTypes.h"
-#include "std_msgs/msg/Float32PubSubTypes.h"
+#include MSG_EXT(carla_msgs/msg/CarlaEgoVehicleStatusPubSubTypes)
+#include MSG_EXT(carla_msgs/msg/CarlaEgoVehicleInfoPubSubTypes)
+#include MSG_EXT(carla_msgs/msg/CarlaEgoVehicleTelemetryDataPubSubTypes)
+#include MSG_EXT(nav_msgs/msg/OdometryPubSubTypes)
+#include MSG_EXT(std_msgs/msg/Float32PubSubTypes)
 
 namespace carla {
 namespace ros2 {

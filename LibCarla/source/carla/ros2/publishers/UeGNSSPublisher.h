@@ -8,7 +8,7 @@
 
 #include "carla/ros2/publishers/UePublisherBaseSensor.h"
 #include "carla/sensor/s11n/GnssSerializer.h"
-#include "sensor_msgs/msg/NavSatFixPubSubTypes.h"
+#include MSG_EXT(sensor_msgs/msg/NavSatFixPubSubTypes)
 
 namespace carla {
 namespace ros2 {

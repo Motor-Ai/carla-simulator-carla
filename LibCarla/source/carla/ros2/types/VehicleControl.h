@@ -7,7 +7,9 @@
 #include "carla/ros2/types/Timestamp.h"
 #include "carla/rpc/VehicleControl.h"
 #include "carla/sensor/data/ActorDynamicState.h"
-#include "carla_msgs/msg/CarlaEgoVehicleControl.h"
+
+#include "carla/ros2/types/MsgExt.h"
+#include MSG_EXT(carla_msgs/msg/CarlaEgoVehicleControl)
 
 namespace carla {
 namespace ros2 {

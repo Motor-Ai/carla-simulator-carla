@@ -9,7 +9,7 @@
 
 #include "carla/ros2/subscribers/SubscriberBase.h"
 #include "carla/ros2/types/WalkerActorDefinition.h"
-#include "carla_msgs/msg/CarlaWalkerControlPubSubTypes.h"
+#include MSG_EXT(carla_msgs/msg/CarlaWalkerControlPubSubTypes)
 
 namespace carla {
 namespace ros2 {

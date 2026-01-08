@@ -6,7 +6,8 @@
 
 #include <cmath>
 
-#include "builtin_interfaces/msg/Time.h"
+#include "carla/ros2/types/MsgExt.h"
+#include MSG_EXT(builtin_interfaces/msg/Time)
 
 namespace carla {
 namespace ros2 {

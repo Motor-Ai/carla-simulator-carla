@@ -5,7 +5,9 @@
 #pragma once
 
 #include "carla/rpc/EpisodeSettings.h"
-#include "carla_msgs/msg/CarlaEpisodeSettings.h"
+
+#include "carla/ros2/types/MsgExt.h"
+#include MSG_EXT(carla_msgs/msg/CarlaEpisodeSettings)
 
 namespace carla {
 namespace ros2 {

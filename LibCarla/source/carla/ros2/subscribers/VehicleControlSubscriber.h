@@ -9,7 +9,7 @@
 
 #include "carla/ros2/subscribers/SubscriberBase.h"
 #include "carla/ros2/types/VehicleActorDefinition.h"
-#include "carla_msgs/msg/CarlaEgoVehicleControlPubSubTypes.h"
+#include MSG_EXT(carla_msgs/msg/CarlaEgoVehicleControlPubSubTypes)
 
 namespace carla {
 namespace ros2 {

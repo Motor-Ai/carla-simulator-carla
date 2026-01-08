@@ -337,8 +337,9 @@ public class Carla : ModuleRules
       if (UsingRos2)
       {
         PublicAdditionalLibraries.Add(Path.Combine(LibCarlaInstallPath, "lib", "libfoonathan_memory-0.7.3.a"));
-        PublicAdditionalLibraries.Add(Path.Combine(LibCarlaInstallPath, "lib", "libfastcdr.a"));
-        PublicAdditionalLibraries.Add(Path.Combine(LibCarlaInstallPath, "lib", "libfastrtps.a"));
+        // since the library names differ between fastdds 2.x and 3.x, let's just seach them
+        string [] files = Directory.GetFiles(Path.Combine(LibCarlaInstallPath, "lib"), "libfast*.a");
+        foreach (string file in files) PublicAdditionalLibraries.Add(file);
       }
 
 
