@@ -53,6 +53,11 @@ public:
     @brief returns the shortest common prefix of all registered topic names for this actor_id
   */
   std::string TopicPrefix(carla::streaming::detail::actor_id_type const actor_id);
+  
+  /*!
+    @brief returns the FrameId for this actor_id
+  */
+  std::string FrameId(carla::streaming::detail::actor_id_type const actor_id);
 
   std::string FrameId(ROS2NameRecord const* record) {
     std::lock_guard<std::mutex> lock(access_mutex);
@@ -90,35 +95,42 @@ private:
   ROS2NameRegistry& operator=(ROS2NameRegistry&&) = delete;
 
   bool IsTopicNameAvailable(TopicAndFrame const& topic_and_frame, std::string const& individual_name);
-  TopicAndFrame ExpandTopicName(TopicAndFrame const& topic_and_frame, std::string const& postfix);
+  // per default frame and topic postfix are considered to be equal
+  TopicAndFrame ExpandTopicName(TopicAndFrame const& topic_and_frame, std::string const& postfix_topic, std::string const& postfix_frame="");
 
   struct KeyType {
-    explicit KeyType(ROS2NameRecord const* record) : _record(record), _actor_id(record->_actor_name_definition->id) {}
+    explicit KeyType(ROS2NameRecord const* record) : 
+    _actor_name_definition(record->_actor_name_definition) {}
 
     bool operator<(const KeyType& other) const {
-      if (_actor_id == other._actor_id) {
-        return _record < other._record;
-      } else {
-        return _actor_id < other._actor_id;
-      }
+      // the actor name definition shared pointer is the differentiating piece
+      return _actor_name_definition < other._actor_name_definition;
     }
+    carla::streaming::detail::actor_id_type actor_id()const { return _actor_name_definition->id; }
 
-    ROS2NameRecord const* const _record;
-    carla::streaming::detail::actor_id_type _actor_id;
+    std::shared_ptr<carla::ros2::types::ActorNameDefinition const> _actor_name_definition;
+    mutable uint32_t _number_of_register_calls{0u};
   };
 
   // locked operations
-  TopicAndFrame const& GetTopicAndFrameLocked(ROS2NameRecord const* record);
-  TopicAndFrame const& GetParentTopicAndFrameLocked(ROS2NameRecord const* record);
-
   TopicAndFrame const& GetTopicAndFrameLocked(KeyType const& key);
+  TopicAndFrame const& GetParentTopicAndFrameLocked(KeyType const& key);
+
+  TopicAndFrame const& GetTopicAndFrameLocked(ROS2NameRecord const* record){
+    return GetTopicAndFrameLocked(KeyType(record));
+  }
+  TopicAndFrame const& GetParentTopicAndFrameLocked(ROS2NameRecord const* record) {
+    return GetParentTopicAndFrameLocked(KeyType(record));
+  }
+
   void UpdateTopicAndFrameLocked(carla::streaming::detail::actor_id_type actor_id);
   std::map<KeyType, TopicAndFrame>::iterator CreateTopicAndFrameLocked(KeyType const& key);
 
   mutable std::mutex access_mutex;
-  std::set<ROS2NameRecord const*> record_set;
+  std::set<KeyType> record_set;
   std::map<carla::streaming::detail::actor_id_type, carla::streaming::detail::actor_id_type> parent_map;
   std::map<KeyType, TopicAndFrame> topic_and_frame_map;
+  std::set<carla::streaming::detail::actor_id_type> missing_parents;
 };
 
 }  // namespace ros2

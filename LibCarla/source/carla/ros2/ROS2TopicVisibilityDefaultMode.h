@@ -6,24 +6,14 @@
 
 #pragma once
 
-#include "carla/MsgPack.h"
-
-#include <cstdint>
-
 namespace carla {
-namespace rpc {
+namespace ros2 {
 
-  enum class QualityLevel : uint8_t {
-    Low,
-    // Medium,
-    // High,
-    Epic,
+enum class ROS2TopicVisibilityDefaultMode {
+  eOn,
+  eOff
+}; 
 
-    SIZE,
-    INVALID
-  };
+}  // namespace ros2
+}  // namespace carla
 
-} // namespace rpc
-} // namespace carla
-
-MSGPACK_ADD_ENUM(carla::rpc::QualityLevel)
