@@ -12,7 +12,6 @@
 #include "carla/MsgPack.h"
 #include "carla/geom/Math.h"
 #include "carla/geom/Vector3D.h"
-#include "carla/geom/RightHandedVector3D.h"
 
 #ifdef LIBCARLA_INCLUDED_FROM_UE4
 #include <compiler/enable-ue4-macros.h>
@@ -75,18 +74,17 @@ namespace geom {
       return RotatedVector(up_vector);
     }
 
-    RightHandedVector3D RotatedVector(RightHandedVector3D const &in_point) const {
+    Vector3D RotatedVector(Vector3D const &in_point) const {
       // Rotates Rz(yaw) * Ry(pitch) * Rx(roll) = first x, then y, then z.
-      // Unreal uses left handed system: negate x,y,z axis rotations (counter direction), negate y-axis rotation again, because we have a right handed vector at hand now
-      const float cr = std::cos(Math::ToRadians(-roll)); // negate
-      const float sr = std::sin(Math::ToRadians(-roll)); // negate
-      const float cp = std::cos(Math::ToRadians(pitch)); // double-negate
-      const float sp = std::sin(Math::ToRadians(pitch)); // double-negate
-      const float cy = std::cos(Math::ToRadians(-yaw)); // negate
-      const float sy = std::sin(Math::ToRadians(-yaw)); // negate
+      const float cr = std::cos(Math::ToRadians(roll));
+      const float sr = std::sin(Math::ToRadians(roll));
+      const float cp = std::cos(Math::ToRadians(pitch));
+      const float sp = std::sin(Math::ToRadians(pitch));
+      const float cy = std::cos(Math::ToRadians(yaw));
+      const float sy = std::sin(Math::ToRadians(yaw));
 
       // Matrix basis see https://en.wikipedia.org/wiki/Rotation_matrix Euler Angles, alpha=roll, beta=pitch, gamma=yaw
-      RightHandedVector3D out_point;
+      Vector3D out_point;
       out_point.x =
         in_point.x * (cp * cy) +
         in_point.y * (cy * sp * sr - sy * cr) +    
@@ -105,18 +103,18 @@ namespace geom {
       return out_point;
     }
 
-    RightHandedVector3D InverseRotatedVector(RightHandedVector3D const &in_point) const {
-      // Unreal uses left handed system: negate x,y,z axis rotations (counter direction), negate y-axis rotation again, because we have a right handed vector at hand now
-      const float cr = std::cos(Math::ToRadians(-roll)); // negate
-      const float sr = std::sin(Math::ToRadians(-roll)); // negate
-      const float cp = std::cos(Math::ToRadians(pitch)); // double-negate
-      const float sp = std::sin(Math::ToRadians(pitch)); // double-negate
-      const float cy = std::cos(Math::ToRadians(-yaw)); // negate
-      const float sy = std::sin(Math::ToRadians(-yaw)); // negate
+    Vector3D InverseRotatedVector(Vector3D const &in_point) const {
+      // Unreal uses left handed system: negate y and z axis rotations, because we have a right handed vector at hand now
+      const float cr = std::cos(Math::ToRadians(roll));
+      const float sr = std::sin(Math::ToRadians(roll));
+      const float cp = std::cos(Math::ToRadians(pitch));
+      const float sp = std::sin(Math::ToRadians(pitch));
+      const float cy = std::cos(Math::ToRadians(yaw));
+      const float sy = std::sin(Math::ToRadians(yaw));
 
       // Applies the transposed of the matrix used in RotateVector function,
       // which is the rotation inverse.
-      RightHandedVector3D out_point;
+      Vector3D out_point;
       out_point.x =
         in_point.x * (cp * cy) +
         in_point.y * (cp * sy) +

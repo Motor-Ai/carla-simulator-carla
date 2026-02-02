@@ -13,6 +13,7 @@
 #include <carla/geom/Quaternion.h>
 #include <limits>
 
+
 using namespace carla::geom;
 
 TEST(geom, single_point_no_transform) {
@@ -97,11 +98,18 @@ TEST(geom, bbox_get_local_vertices_get_world_vertices_coherence) {
 TEST(geom, quaternion_get_yaw) {
   constexpr double error = 0.001;
 
-  {  Rotation rotation (0.0,90.0,0.0); // y z x
+  {  
+    Rotation rotation (0.0,90.0,0.0); // y z x
     Quaternion quat(rotation);
     auto const yaw = quat.YawDegree();
 
     ASSERT_NEAR(yaw, 90.f, error) << "quat: " << quat.x << " " << quat.y << " " << quat.z << " " << quat.w;
+
+    Rotation rotation_back = quat.Rotator();
+    ASSERT_NEAR(rotation.roll, rotation_back.roll, error) << "quat: " << quat.x << " " << quat.y << " " << quat.z << " " << quat.w;
+    ASSERT_NEAR(rotation.pitch, rotation_back.pitch, error) << "quat: " << quat.x << " " << quat.y << " " << quat.z << " " << quat.w;
+    ASSERT_NEAR(rotation.yaw, rotation_back.yaw, error) << "quat: " << quat.x << " " << quat.y << " " << quat.z << " " << quat.w;
+
   }
   {
     Rotation rotation (11.0,33.0,55.0); // y z x
@@ -109,6 +117,10 @@ TEST(geom, quaternion_get_yaw) {
     auto const yaw = quat.YawDegree();
 
     ASSERT_NEAR(yaw, 33.f, error) << "quat: " << quat.x << " " << quat.y << " " << quat.z << " " << quat.w;
+    Rotation rotation_back = quat.Rotator();
+    ASSERT_NEAR(rotation.pitch, rotation_back.pitch, error) << "quat: " << quat.x << " " << quat.y << " " << quat.z << " " << quat.w;
+    ASSERT_NEAR(rotation.yaw, rotation_back.yaw, error) << "quat: " << quat.x << " " << quat.y << " " << quat.z << " " << quat.w;
+    ASSERT_NEAR(rotation.roll, rotation_back.roll, error) << "quat: " << quat.x << " " << quat.y << " " << quat.z << " " << quat.w;
   }
 }
 
@@ -125,7 +137,7 @@ TEST(geom, quaternion_inverse) {
   ASSERT_NEAR(unit.w, Quaternion().w, error)  << "unit: " << unit.x << " " << unit.y << " " << unit.z << " " << unit.w;
 }
 
-Vector3D carla_0_9_15_RotatedVector(Rotation const &rotator, Vector3D const &in_point)  {
+Vector3D carla_0_9_16_RotatedVector(Rotation const &rotator, Vector3D const &in_point)  {
   // Rotates Rz(yaw) * Ry(pitch) * Rx(roll) = first x, then y, then z.
   const float cy = std::cos(Math::ToRadians(rotator.yaw));
   const float sy = std::sin(Math::ToRadians(rotator.yaw));
@@ -211,13 +223,29 @@ TEST(geom, single_point_rotation_90) {
       << " quat: " << quaternion.x << " " << quaternion.y << " " << quaternion.z << " " << quaternion.w << "\n"
       << " rotated_vector: " << rotated_vector.x << " " << rotated_vector.y << " " << rotated_vector.z;
 
-    auto const carla_0_9_15_result = carla_0_9_15_RotatedVector(rotator, in_point);
-    if ((std::fabs(carla_0_9_15_result.x-result_point.x) > error) ||
-        (std::fabs(carla_0_9_15_result.y-result_point.y) > error) ||
-        (std::fabs(carla_0_9_15_result.z-result_point.z) > error))  {
+    Rotation quat_rotator = quaternion.Rotator();
+    EXPECT_NEAR(quat_rotator.roll, rotator.roll, error) 
+      << " LINE " << line << " roll: \n"
+      << " quat: " << quaternion.x << " " << quaternion.y << " " << quaternion.z << " " << quaternion.w;
+    EXPECT_NEAR(quat_rotator.pitch, rotator.pitch, error) 
+      << " LINE "<< line << " pitch: \n"
+      << " quat: " << quaternion.x << " " << quaternion.y << " " << quaternion.z << " " << quaternion.w;
+    EXPECT_NEAR(quat_rotator.yaw, rotator.yaw, error) 
+      << " LINE "<< line << " yaw: \n"
+      << " quat: " << quaternion.x << " " << quaternion.y << " " << quaternion.z << " " << quaternion.w;
+    float quat_yaw_rad = quaternion.YawRad();
+    EXPECT_NEAR(quat_yaw_rad, Math::ToRadians(rotator.yaw), error) 
+      << " LINE "<< line << " quat-yaw-rad: \n"
+      << " quat: " << quaternion.x << " " << quaternion.y << " " << quaternion.z << " " << quaternion.w;
+
+
+    auto const carla_0_9_16_result = carla_0_9_16_RotatedVector(rotator, in_point);
+    if ((std::fabs(carla_0_9_16_result.x-result_point.x) > error) ||
+        (std::fabs(carla_0_9_16_result.y-result_point.y) > error) ||
+        (std::fabs(carla_0_9_16_result.z-result_point.z) > error))  {
       std::cerr << "Information: Rotation carla 0.9.16 test Rotation(pitch=" << rotator.pitch << ", yaw=" << rotator.yaw << ", roll=" << rotator.roll << ")" << std::endl
                 << " point: " << point.x << " " << point.y << " " << point.z << std::endl
-                << " resulted in point: " << carla_0_9_15_result.x << " " << carla_0_9_15_result.y << " " << carla_0_9_15_result.z << std::endl
+                << " resulted in point: " << carla_0_9_16_result.x << " " << carla_0_9_16_result.y << " " << carla_0_9_16_result.z << std::endl
                 << " but correct result is : " << result_point.x << " " << result_point.y << " " << result_point.z << std::endl;
     }
   };
