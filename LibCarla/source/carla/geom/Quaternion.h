@@ -6,8 +6,6 @@
 
 #pragma once
 
-#define ALLOW_UNSAFE_GEOM_MATRIX_ACCESS 1
-
 #include <array>
 #include <ostream>
 #include <sstream>
@@ -62,8 +60,11 @@ namespace geom {
     explicit Quaternion(Rotation const &rotator) {
       // intermediate values in double to improve precision
       // calculation see https://en.wikipedia.org/wiki/Conversion_between_quaternions_and_Euler_angles
-      double const roll_2 = Math::ToRadians(rotator.roll) * 0.5;
-      double const pitch_2 = Math::ToRadians(rotator.pitch) * 0.5;
+      // geom::Quaternion is in unreal left handed system, rotating around all axis left handed
+      // geom::Rotation is in unreal left handed system, treating yaw as left-handed rotation
+      // but pitch and roll as right-handed ones! Therefore, we have to negate pitch and roll here
+      double const roll_2 = Math::ToRadians(-rotator.roll) * 0.5;
+      double const pitch_2 = Math::ToRadians(-rotator.pitch) * 0.5;
       double const yaw_2 = Math::ToRadians(rotator.yaw) * 0.5;
       double cr = std::cos(roll_2);
       double sr = std::sin(roll_2);
@@ -72,8 +73,6 @@ namespace geom {
       double cy = std::cos(yaw_2);
       double sy = std::sin(yaw_2);
 
-      // geom::Rotation is storing rotations in Unreal left handed system
-      // therefore no left/right handed conversion required
       x = float(sr * cp * cy - cr * sp * sy);
       y = float(cr * sp * cy + sr * cp * sy);
       z = float(cr * cp * sy - sr * sp * cy);
@@ -87,8 +86,9 @@ namespace geom {
       double cy = std::cos(yaw_2);
       double sy = std::sin(yaw_2);
       Quaternion quat;
-      // geom::Rotation is storing rotations in Unreal left handed system
-      // therefore no left/right handed conversion required
+      // geom::Quaternion is in unreal left handed system, rotating around all axis left handed
+      // geom::Rotation is in unreal left handed system, treating yaw as left-handed rotation
+      // Therefore, no negation required for yaw component
       quat.x = 0.f;
       quat.y = 0.f;
       quat.z = float(sy);
@@ -153,8 +153,9 @@ namespace geom {
         auto const cp = std::cos(pitch);
         yaw = std::atan2(matrix[3]/cp, matrix[0]/cp);
       }
-      // geom::Rotation is storing rotations in Unreal left handed system
-      // therefore no left/right handed conversion required
+      // geom::Quaternion is in unreal left handed system, rotating around all axis left handed
+      // geom::Rotation is in unreal left handed system, treating yaw as left-handed rotation
+      // Therefore, no negation required for yaw component
       return yaw;
     }
 
@@ -189,11 +190,12 @@ namespace geom {
         yaw = 0.f;
         roll = std::atan2(matrix[7], matrix[8]);
       }
-      // geom::Rotation is storing rotations in Unreal left handed system
-      // therefore no left/right handed conversion required
+      // geom::Quaternion is in unreal left handed system, rotating around all axis left handed
+      // geom::Rotation is in unreal left handed system, treating yaw as left-handed rotation
+      // but pitch and roll as right-handed ones! Therefore, we have to negate pitch and roll here
       carla::geom::Rotation rotator;
-      rotator.roll = Math::ToDegrees(roll);
-      rotator.pitch = Math::ToDegrees(pitch);
+      rotator.roll = Math::ToDegrees(-roll);
+      rotator.pitch = Math::ToDegrees(-pitch);
       rotator.yaw = Math::ToDegrees(yaw);
       return rotator;
     }
@@ -266,16 +268,7 @@ namespace geom {
     }
     // =========================================================================
 
-#if ALLOW_UNSAFE_GEOM_MATRIX_ACCESS
   public:
-#else
-  private:
-#endif
-    // Computes the 3x3 rotation-matrix of the quaternion (as this matrix operates in right handed space as our quaternion, keept the matrix private for the moment.
-    // If required public input/output vectors of this operation will have to be ensured to be Vector3D
-    // Therefore, making it public reuires a dedicated Matrix class which is enforing this by it's interface. 
-    // Don't allow access on matrix members for people who don't know the background in detail: that will definitely go wrong!
-    // Best is to NOT use this function therefore at all.
     std::array<float, 9> RotationMatrix() const {
       // calculation see https://en.wikipedia.org/wiki/Conversion_between_quaternions_and_Euler_angles
       // in the matrix each component is multplied with another component; 

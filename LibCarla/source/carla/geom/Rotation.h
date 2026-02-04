@@ -76,6 +76,8 @@ namespace geom {
 
     Vector3D RotatedVector(Vector3D const &in_point) const {
       // Rotates Rz(yaw) * Ry(pitch) * Rx(roll) = first x, then y, then z.
+      // Be aware that the Unreal Rotator interface uses a very special interpretation of rotation directions
+      // treating yaw as left-handed rotation but pitch and roll as right-handed ones! 
       const float cr = std::cos(Math::ToRadians(roll));
       const float sr = std::sin(Math::ToRadians(roll));
       const float cp = std::cos(Math::ToRadians(pitch));
@@ -83,28 +85,26 @@ namespace geom {
       const float cy = std::cos(Math::ToRadians(yaw));
       const float sy = std::sin(Math::ToRadians(yaw));
 
-      // Matrix basis see https://en.wikipedia.org/wiki/Rotation_matrix Euler Angles, alpha=roll, beta=pitch, gamma=yaw
       Vector3D out_point;
       out_point.x =
         in_point.x * (cp * cy) +
-        in_point.y * (cy * sp * sr - sy * cr) +    
-        in_point.z * (cy * sp * cr + sy * sr);
+        in_point.y * (cy * sp * sr - sy * cr) +
+        in_point.z * (-cy * sp * cr - sy * sr);
 
       out_point.y =
         in_point.x * (cp * sy) +
         in_point.y * (sy * sp * sr + cy * cr) +
-        in_point.z * (sy * sp * cr - cy * sr);
+        in_point.z * (-sy * sp * cr + cy * sr);
 
       out_point.z =
-        in_point.x * (-sp) +
-        in_point.y * (cp * sr) +
+        in_point.x * (sp) +
+        in_point.y * (-cp * sr) +
         in_point.z * (cp * cr);
 
       return out_point;
     }
 
     Vector3D InverseRotatedVector(Vector3D const &in_point) const {
-      // Unreal uses left handed system: negate y and z axis rotations, because we have a right handed vector at hand now
       const float cr = std::cos(Math::ToRadians(roll));
       const float sr = std::sin(Math::ToRadians(roll));
       const float cp = std::cos(Math::ToRadians(pitch));
@@ -118,16 +118,16 @@ namespace geom {
       out_point.x =
         in_point.x * (cp * cy) +
         in_point.y * (cp * sy) +
-        in_point.z * (-sp);
+        in_point.z * (sp);
 
       out_point.y =
         in_point.x * (cy * sp * sr - sy * cr) +
         in_point.y * (sy * sp * sr + cy * cr) +
-        in_point.z * (cp * sr);
+        in_point.z * (-cp * sr);
 
       out_point.z =
-        in_point.x * (cy * sp * cr + sy * sr) +
-        in_point.y * (sy * sp * cr - cy * sr) +
+        in_point.x * (-cy * sp * cr - sy * sr) +
+        in_point.y * (-sy * sp * cr + cy * sr) +
         in_point.z * (cp * cr);
 
       return out_point;
