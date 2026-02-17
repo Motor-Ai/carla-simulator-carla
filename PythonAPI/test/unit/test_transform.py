@@ -8,7 +8,6 @@ import carla
 
 import unittest
 import math
-import math
 
 WGS84 = carla.GeoEllipsoid(a=6378137.0, f_inv=298.257223563)
 

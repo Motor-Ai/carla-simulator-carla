@@ -314,17 +314,6 @@ void export_geom() {
   .def("__eq__", &cg::OffsetTransform::operator==)
   ;
 
-  class_<cg::OffsetTransform>("GeoOffsetTransform")
-  .def(init<double, double, double, double>((arg("offset_x")=0.0, arg("offset_y")=0.0, arg("offset_z")=0.0, arg("offset_hdg")=0.0)))
-  .def_readwrite("offset_x", &cg::OffsetTransform::offset_x)
-  .def_readwrite("offset_y", &cg::OffsetTransform::offset_y)
-  .def_readwrite("offset_z", &cg::OffsetTransform::offset_z)
-  .def_readwrite("offset_cos_h", &cg::OffsetTransform::offset_cos_h)
-  .def_readwrite("offset_sin_h", &cg::OffsetTransform::offset_sin_h)
-  .def("ApplyTransformation", &cg::OffsetTransform::ApplyTransformation)
-  .def("__eq__", &cg::OffsetTransform::operator==)
-  ;
-
   class_<cg::TransverseMercatorParams>("GeoProjectionTM")
     .def(init<double, double, double, double, double, cg::Ellipsoid>(
       (arg("lat_0")=0.0, arg("lon_0")=0.0, arg("k")=1.0, arg("x_0")=0.0, arg("y_0")=0.0, arg("ellps")=cg::Ellipsoid())))
