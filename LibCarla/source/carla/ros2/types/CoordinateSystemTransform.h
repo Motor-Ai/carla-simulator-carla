@@ -6,7 +6,7 @@
 
 #include "carla/geom/Vector3D.h"
 
-#include "carla/ros2/types/MsgExt.h"
+#include "fastcdr/CarlaMsgSupport.h"
 #include MSG_EXT(geometry_msgs/msg/Point32)
 #include MSG_EXT(geometry_msgs/msg/Vector3)
 

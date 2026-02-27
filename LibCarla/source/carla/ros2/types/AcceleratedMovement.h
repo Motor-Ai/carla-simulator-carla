@@ -11,7 +11,7 @@
 #include "carla/ros2/types/Timestamp.h"
 #include "carla/ros2/types/Twist.h"
 
-#include "carla/ros2/types/MsgExt.h"
+#include "fastcdr/CarlaMsgSupport.h"
 #include MSG_EXT(geometry_msgs/msg/AccelWithCovariance)
 
 namespace carla {

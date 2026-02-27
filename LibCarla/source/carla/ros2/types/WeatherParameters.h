@@ -8,7 +8,7 @@
 
 #include "carla/rpc/WeatherParameters.h"
 
-#include "carla/ros2/types/MsgExt.h"
+#include "fastcdr/CarlaMsgSupport.h"
 #include MSG_EXT(carla_msgs/msg/CarlaWeatherParameters)
 
 namespace carla {

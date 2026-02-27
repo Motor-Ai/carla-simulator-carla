@@ -135,9 +135,11 @@ if ${BUILD_OSM2ODR} ; then
     rm -Rf ${OSM2ODR_BASENAME}-server-build ${OSM2ODR_BASENAME}-client-build
   fi
 
+  mkdir -p ${LIBCARLA_INSTALL_SERVER_FOLDER}/include ${LIBCARLA_INSTALL_SERVER_FOLDER}/lib
   cp -p -r ${OSM2ODR_BASENAME}-server-install/include/* ${LIBCARLA_INSTALL_SERVER_FOLDER}/include/
   cp -p ${OSM2ODR_BASENAME}-server-install/lib/*.a ${LIBCARLA_INSTALL_SERVER_FOLDER}/lib
 
+  mkdir -p ${LIBCARLA_INSTALL_CLIENT_FOLDER}/include ${LIBCARLA_INSTALL_CLIENT_FOLDER}/lib
   cp -p -r ${OSM2ODR_BASENAME}-client-install/include/* ${LIBCARLA_INSTALL_CLIENT_FOLDER}/include/
   cp -p ${OSM2ODR_BASENAME}-client-install/lib/*.a ${LIBCARLA_INSTALL_CLIENT_FOLDER}/lib
 

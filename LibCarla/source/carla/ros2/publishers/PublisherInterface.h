@@ -8,7 +8,7 @@
 #include "carla/ros2/ROS2NameRecord.h"
 #include "carla/ros2/types/Transform.h"
 #include "carla/sensor/data/SerializerVectorAllocator.h"
-#include "carla/ros2/types/MsgExt.h"
+#include "fastcdr/CarlaMsgSupport.h"
 #include MSG_EXT(builtin_interfaces/msg/Time)
 
 namespace carla {

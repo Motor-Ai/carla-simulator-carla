@@ -31,6 +31,10 @@ file(GLOB fast_dds_include_dirs "${FASTDDS_INCLUDE_PATH}/*")
 foreach(fast_dds_include_dir ${fast_dds_include_dirs})
   install(DIRECTORY "${fast_dds_include_dir}" DESTINATION include)
 endforeach()
+# Carla fastcdr overrides and extra files
+file(GLOB carla_fast_dds_overrides "${libcarla_source_path}/carla/ros2/fastcdr/${FAST_CDR_MAJOR_MINOR_VERSION}/fastcdr/*")
+install(FILES ${carla_fast_dds_overrides} DESTINATION include/fastcdr/)
+
 
 # Collect the sources
 foreach(ros2_dir

@@ -15,7 +15,9 @@
 #include <fastdds/dds/subscriber/Subscriber.hpp>
 #include <fastdds/dds/topic/Topic.hpp>
 #include <fastdds/dds/topic/TypeSupport.hpp>
-#include <fastdds/rtps/common/WriteParams.hpp>
+#if FASTDDS_VERSION_MAJOR >= 3
+# include <fastdds/rtps/common/WriteParams.hpp>
+#endif
 
 #include "carla/Logging.h"
 #include "carla/ros2/impl/DdsDomainParticipantImpl.h"
@@ -27,7 +29,7 @@ namespace carla {
 namespace ros2 {
 
 template <typename REQUEST_TYPE, typename REQUEST_PUB_TYPE, typename RESPONSE_TYPE, typename RESPONSE_PUB_TYPE>
-class DdsServiceImpl : public ServiceInterface, public eprosima::fastdds::dds::DataReaderListener {
+class DdsServiceImpl : public ServiceInterface, public eprosima::fastdds::dds::DataReaderListener, public eprosima::fastdds::dds::DataWriterListener {
 public:
   DdsServiceImpl() = default;
 
@@ -139,12 +141,14 @@ public:
       return false;
     }
 
+    eprosima::fastdds::dds::DataWriterListener* listener =
+        static_cast<eprosima::fastdds::dds::DataWriterListener*>(this);
     auto writer_qos = eprosima::fastdds::dds::DATAWRITER_QOS_DEFAULT;
     writer_qos.endpoint().history_memory_policy = FastRtpsNamespace::rtps::PREALLOCATED_WITH_REALLOC_MEMORY_MODE;
     writer_qos.history().kind = eprosima::fastdds::dds::KEEP_ALL_HISTORY_QOS;
     writer_qos.durability().kind = eprosima::fastdds::dds::TRANSIENT_LOCAL_DURABILITY_QOS;
     writer_qos.reliability().kind = eprosima::fastdds::dds::RELIABLE_RELIABILITY_QOS;
-    _datawriter = _publisher->create_datawriter(_response_topic, writer_qos);
+    _datawriter = _publisher->create_datawriter(_response_topic, writer_qos, listener);
     if (_datawriter == nullptr) {
       carla::log_error("DdsServiceImpl[", _response_topic->get_name(), "]::Init() Failed to create DataWriter");
       return false;
@@ -176,6 +180,12 @@ public:
     }
   }
 
+   void on_publication_matched(eprosima::fastdds::dds::DataWriter*,
+                              const eprosima::fastdds::dds::PublicationMatchedStatus& info) override {
+    carla::log_debug("DdsServiceImpl[", _response_topic->get_name(), "]::on_publication_matched(): ", info.current_count);
+  }
+
+
   void CheckRequest() override {
     if (!_callback) {
       carla::log_warning("DdsServiceImpl[", _request_topic->get_name(), "]::CheckRequest(): No callback defined yet");
@@ -190,7 +200,7 @@ public:
       FastRtpsNamespace::rtps::WriteParams write_params;
       write_params.related_sample_identity() = incoming_request._request_identity;
       auto rcode = _datawriter->write(reinterpret_cast<void*>(&response), write_params);
-      if (rcode != bool(FastDdsReturnCodePrefix::RETCODE_OK)) {
+      if (rcode != FastDdsReturnCodePrefix::RETCODE_OK) {
         // strange: getting error while the result is actually sent out
         carla::log_debug("DdsServiceImpl[", _response_topic->get_name(),
                          "]::CheckRequest() Failed to write data; Error ", return_code_string(rcode));

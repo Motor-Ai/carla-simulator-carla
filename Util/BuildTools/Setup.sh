@@ -991,17 +991,24 @@ fi
 # -- Download Fast DDS and dependencies ----------------------------------------
 # ==============================================================================
 CURRENT_VERSION=$(lsb_release -rs)
-if dpkg --compare-versions "$CURRENT_VERSION" ge "24.04"; then
-  FAST_DDS_LIB_VERSION=v3.2.3
+# not yet fully working
+#if dpkg --compare-versions "$CURRENT_VERSION" ge "24.04"; then
+#  FAST_DDS_LIB_VERSION=v3.2.3
+#  FOONATHAN_MEMORY_VENDOR_VERSION=v1.3.2
+#  FAST_CDR_MAJOR_MINOR_VERSION=v2.3
+#  FAST_DDS_VERSION_MAJOR=3
+#else
+  FAST_DDS_LIB_VERSION=2.14.6
   FOONATHAN_MEMORY_VENDOR_VERSION=v1.3.2
-  FAST_CDR_MAJOR_MINOR_VERSION=v2.3
-  FAST_DDS_VERSION_MAJOR=3
-else
-  FAST_DDS_LIB_VERSION=v2.11.2
-  FOONATHAN_MEMORY_VENDOR_VERSION=v1.3.2
-  FAST_CDR_MAJOR_MINOR_VERSION=v1
+  FAST_CDR_MAJOR_MINOR_VERSION=v2.2
   FAST_DDS_VERSION_MAJOR=2
-fi
+
+# is there a reason to keep the old one?
+  #FAST_DDS_LIB_VERSION=v2.11.2
+  #FOONATHAN_MEMORY_VENDOR_VERSION=v1.3.2
+  #FAST_CDR_MAJOR_MINOR_VERSION=v1
+  #FAST_DDS_VERSION_MAJOR=2
+#fi
 
 FASTDDS_BASENAME=fast-dds
 FASTDDS_INSTALL_DIR=${PWD}/${FASTDDS_BASENAME}-install

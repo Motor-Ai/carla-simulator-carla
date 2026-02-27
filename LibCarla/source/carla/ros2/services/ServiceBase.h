@@ -11,7 +11,7 @@
 #include "carla/ros2/ROS2QoS.h"
 #include "carla/ros2/services/ServiceInterface.h"
 #include "carla/rpc/RpcServerInterface.h"
-#include "carla/ros2/types/MsgExt.h"
+#include "fastcdr/CarlaMsgSupport.h"
 
 namespace carla {
 namespace ros2 {

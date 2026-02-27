@@ -7,7 +7,7 @@
 #include "carla/ros2/ROS2NameRecord.h"
 #include "carla/ros2/ROS2QoS.h"
 #include "carla/ros2/publishers/PublisherInterface.h"
-#include "carla/ros2/types/MsgExt.h"
+#include "fastcdr/CarlaMsgSupport.h"
 
 namespace carla {
 namespace ros2 {

@@ -19,20 +19,12 @@
 #include "carla/ros2/impl/DdsReturnCode.h"
 #include "carla/ros2/publishers/PublisherInterface.h"
 
-#include "carla/ros2/types/MsgExt.h"
+#include "fastcdr/CarlaMsgSupport.h"
 #include MSG_EXT(builtin_interfaces/msg/Time)
 
 
 namespace carla {
 namespace ros2 {
-
-
-#if FASTDDS_VERSION_MAJOR >= 3
-#define PointFieldTypePrefix(x) sensor_msgs::msg::PointField_Constants::x
-#else
-# define PointFieldTypePrefix(x) sensor_msgs::msg::PointField__##x
-#endif
-
 
 template <typename MESSAGE_TYPE, typename MESSAGE_PUB_TYPE>
 class DdsPublisherImpl : public PublisherInterface, eprosima::fastdds::dds::DataWriterListener {

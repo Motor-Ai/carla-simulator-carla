@@ -12,7 +12,7 @@
 #include "carla/ros2/ROS2TopicVisibilityDefaultMode.h"
 #include "carla/rpc/ObjectLabel.h"
 
-#include "carla/ros2/types/MsgExt.h"
+#include "fastcdr/CarlaMsgSupport.h"
 #include MSG_EXT(carla_msgs/msg/CarlaActorInfo)
 
 

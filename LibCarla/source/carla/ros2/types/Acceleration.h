@@ -7,7 +7,7 @@
 #include "carla/geom/Acceleration.h"
 #include "carla/ros2/types/CoordinateSystemTransform.h"
 
-#include "carla/ros2/types/MsgExt.h"
+#include "fastcdr/CarlaMsgSupport.h"
 #include MSG_EXT(geometry_msgs/msg/Accel)
 
 namespace carla {

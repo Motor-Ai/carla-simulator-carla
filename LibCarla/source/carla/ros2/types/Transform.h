@@ -8,7 +8,7 @@
 #include "carla/ros2/types/CoordinateSystemTransform.h"
 #include "carla/ros2/types/Quaternion.h"
 
-#include "carla/ros2/types/MsgExt.h"
+#include "fastcdr/CarlaMsgSupport.h"
 #include MSG_EXT(geometry_msgs/msg/PoseWithCovariance)
 #include MSG_EXT(geometry_msgs/msg/Transform)
 

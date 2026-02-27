@@ -8,7 +8,7 @@
 #include "carla/ros2/types/AngularVelocity.h"
 #include "carla/ros2/types/Speed.h"
 
-#include "carla/ros2/types/MsgExt.h"
+#include "fastcdr/CarlaMsgSupport.h"
 #include MSG_EXT(geometry_msgs/msg/TwistWithCovariance)
 
 namespace carla {

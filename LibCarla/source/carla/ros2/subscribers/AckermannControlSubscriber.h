@@ -11,7 +11,7 @@
 #include "carla/ros2/types/VehicleActorDefinition.h"
 
 
-#include "carla/ros2/types/MsgExt.h"
+#include "fastcdr/CarlaMsgSupport.h"
 #include MSG_EXT(ackermann_msgs/msg/AckermannDriveStampedPubSubTypes)
 
 namespace carla {

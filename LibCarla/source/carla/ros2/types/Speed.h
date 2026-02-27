@@ -8,7 +8,7 @@
 #include "carla/geom/Quaternion.h"
 #include "carla/geom/Velocity.h"
 
-#include "carla/ros2/types/MsgExt.h"
+#include "fastcdr/CarlaMsgSupport.h"
 #include MSG_EXT(std_msgs/msg/Float32)
 
 namespace carla {
