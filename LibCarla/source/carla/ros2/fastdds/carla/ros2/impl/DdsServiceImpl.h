@@ -85,8 +85,6 @@ public:
     }
     _request_type.register_type(_participant);
     auto topic_qos = eprosima::fastdds::dds::TOPIC_QOS_DEFAULT;
-    topic_qos.history().kind = eprosima::fastdds::dds::KEEP_ALL_HISTORY_QOS;
-    topic_qos.reliability().kind = eprosima::fastdds::dds::RELIABLE_RELIABILITY_QOS;
 #if FASTDDS_VERSION_MAJOR >= 3
     auto const request_type_name = _request_type->get_name();
 #else
@@ -107,8 +105,10 @@ public:
     eprosima::fastdds::dds::DataReaderListener* reader_listener =
         static_cast<eprosima::fastdds::dds::DataReaderListener*>(this);
     auto datareader_qos = eprosima::fastdds::dds::DATAREADER_QOS_DEFAULT;
-    datareader_qos.history().kind = eprosima::fastdds::dds::KEEP_ALL_HISTORY_QOS;
+    datareader_qos.history().kind = eprosima::fastdds::dds::KEEP_LAST_HISTORY_QOS;
+    datareader_qos.history().depth = 50;
     datareader_qos.reliability().kind = eprosima::fastdds::dds::RELIABLE_RELIABILITY_QOS;
+    datareader_qos.durability().kind = eprosima::fastdds::dds::VOLATILE_DURABILITY_QOS;
     _datareader =
         _subscriber->create_datareader(_request_topic, datareader_qos, reader_listener);
     if (_datareader == nullptr) {
@@ -145,9 +145,12 @@ public:
         static_cast<eprosima::fastdds::dds::DataWriterListener*>(this);
     auto writer_qos = eprosima::fastdds::dds::DATAWRITER_QOS_DEFAULT;
     writer_qos.endpoint().history_memory_policy = FastRtpsNamespace::rtps::PREALLOCATED_WITH_REALLOC_MEMORY_MODE;
-    writer_qos.history().kind = eprosima::fastdds::dds::KEEP_ALL_HISTORY_QOS;
-    writer_qos.durability().kind = eprosima::fastdds::dds::TRANSIENT_LOCAL_DURABILITY_QOS;
+    writer_qos.history().kind = eprosima::fastdds::dds::KEEP_LAST_HISTORY_QOS;
+    writer_qos.history().depth = 10;
+    writer_qos.durability().kind = eprosima::fastdds::dds::VOLATILE_DURABILITY_QOS;
     writer_qos.reliability().kind = eprosima::fastdds::dds::RELIABLE_RELIABILITY_QOS;
+    // push service responses immediately to the middleware
+    writer_qos.publish_mode().kind = eprosima::fastdds::dds::SYNCHRONOUS_PUBLISH_MODE;
     _datawriter = _publisher->create_datawriter(_response_topic, writer_qos, listener);
     if (_datawriter == nullptr) {
       carla::log_error("DdsServiceImpl[", _response_topic->get_name(), "]::Init() Failed to create DataWriter");
@@ -199,7 +202,7 @@ public:
 
       FastRtpsNamespace::rtps::WriteParams write_params;
       write_params.related_sample_identity() = incoming_request._request_identity;
-      auto rcode = _datawriter->write(reinterpret_cast<void*>(&response), write_params);
+      auto rcode = _datawriter->write(&response, write_params);
       if (rcode != FastDdsReturnCodePrefix::RETCODE_OK) {
         // strange: getting error while the result is actually sent out
         carla::log_debug("DdsServiceImpl[", _response_topic->get_name(),

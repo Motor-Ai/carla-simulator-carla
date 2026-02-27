@@ -56,18 +56,14 @@ public:
    */
   bool InitHistoryPreallocatedWithReallocMemoryMode(std::shared_ptr<DdsDomainParticipantImpl> domain_participant,
                                                     std::string topic_name, ROS2QoS qos) {
-    auto pubqos = PublisherQos(qos);
     auto wqos = DataWriterQos(qos);
-    auto tqos = TopicQos(qos);
     wqos.endpoint().history_memory_policy = FastRtpsNamespace::rtps::PREALLOCATED_WITH_REALLOC_MEMORY_MODE;
-    return InitInternal(domain_participant, topic_name, tqos, pubqos, wqos);
+    return InitInternal(domain_participant, topic_name, wqos);
   }
 
   bool Init(std::shared_ptr<DdsDomainParticipantImpl> domain_participant, std::string topic_name, ROS2QoS qos) {
-    auto pubqos = PublisherQos(qos);
     auto wqos = DataWriterQos(qos);
-    auto tqos = TopicQos(qos);
-    return InitInternal(domain_participant, topic_name, tqos, pubqos, wqos);
+    return InitInternal(domain_participant, topic_name, wqos);
   }
 
   bool Publish() override {
@@ -135,7 +131,6 @@ private:
   }
 
   bool InitInternal(std::shared_ptr<DdsDomainParticipantImpl> domain_participant, std::string topic_name,
-                    eprosima::fastdds::dds::TopicQos const& tqos, eprosima::fastdds::dds::PublisherQos const& pubqos,
                     eprosima::fastdds::dds::DataWriterQos const& wqos) {
     carla::log_debug("DdsPublisherImpl[", topic_name, "]::Init()");
 
@@ -152,12 +147,14 @@ private:
 
     _type.register_type(_participant);
 
+    auto const pubqos = eprosima::fastdds::dds::PUBLISHER_QOS_DEFAULT;
     _publisher = _participant->create_publisher(pubqos);
     if (_publisher == nullptr) {
       carla::log_error("DdsPublisherImpl[", get_type_name(), "]::Init() Failed to create Publisher");
       return false;
     }
 
+    auto const tqos = eprosima::fastdds::dds::TOPIC_QOS_DEFAULT;
     _topic = _participant->create_topic(topic_name, get_type_name(), tqos);
     if (_topic == nullptr) {
       carla::log_error("DdsPublisherImpl[", get_type_name(), "]::Init() Failed to create Topic for ", topic_name);
