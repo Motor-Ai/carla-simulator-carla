@@ -16,7 +16,7 @@ SetEpisodeSettingsService::SetEpisodeSettingsService(
   : ServiceBase(carla_server, actor_name_definition), _impl(std::make_shared<SetEpisodeSettingsServiceImpl>()) {}
 
 bool SetEpisodeSettingsService::Init(std::shared_ptr<DdsDomainParticipantImpl> domain_participant) {
-  _impl->SetServiceCallback(std::bind(&SetEpisodeSettingsService::SetEpisodeSettings, this, std::placeholders::_1));
+  _impl->SetSyncServiceCallback(std::bind(&SetEpisodeSettingsService::SetEpisodeSettings, this, std::placeholders::_1));
   return _impl->Init(domain_participant, get_topic_name());
 }
 
@@ -30,11 +30,14 @@ carla_msgs::srv::SetEpisodeSettings_Response SetEpisodeSettingsService::SetEpiso
   carla_msgs::srv::SetEpisodeSettings_Response response;
   carla::ros2::types::EpisodeSettings episode_settings(request.episode_settings());
   auto result = _carla_server.call_set_episode_settings(episode_settings.GetEpisodeSettings());
-  if ( result > 0 ) {
-    response.success(true);
+  if ( result.HasError() ) {
+    log_error("ROS2:SetEpisodeSettings(): failed to apply episode settings: ", 
+      result.GetError().What());
+    response.success(false);
   }
   else {
-    response.success(false);
+    log_info("ROS2:SetEpisodeSettings(): applied episode settings successful");
+    response.success(true);
   }
 
   return response;
