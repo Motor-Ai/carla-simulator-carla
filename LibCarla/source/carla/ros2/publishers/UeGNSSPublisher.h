@@ -6,7 +6,7 @@
 
 #include <memory>
 
-#include "carla/ros2/publishers/UePublisherBaseSensor.h"
+#include "carla/ros2/publishers/UePublisherBase.h"
 #include "carla/sensor/s11n/GnssSerializer.h"
 #include "sensor_msgs/msg/NavSatFixPubSubTypes.h"
 
@@ -15,7 +15,7 @@ namespace ros2 {
 
 using UeGNSSPublisherImpl = DdsPublisherImpl<sensor_msgs::msg::NavSatFix, sensor_msgs::msg::NavSatFixPubSubType>;
 
-class UeGNSSPublisher : public UePublisherBaseSensor {
+class UeGNSSPublisher : public UePublisherBase {
 public:
   UeGNSSPublisher(std::shared_ptr<carla::ros2::types::SensorActorDefinition> sensor_actor_definition,
                   std::shared_ptr<TransformPublisher> transform_publisher);
@@ -36,7 +36,7 @@ public:
   bool SubscribersConnected() const override;
 
   /**
-   * Implements UePublisherBaseSensor::UpdateSensorData() interface
+   * Implements UePublisherBase::UpdateSensorData() interface
    */
   void UpdateSensorData(std::shared_ptr<carla::sensor::s11n::SensorHeaderSerializer::Header const> sensor_header,
                         const carla::SharedBufferView buffer_view) override;
@@ -48,6 +48,10 @@ private:
   }
 
   std::shared_ptr<UeGNSSPublisherImpl> _impl;
+
+  double _noise_lat_covar{0.};
+  double _noise_lon_covar{0.};
+  double _noise_alt_covar{0.};
 };
 }  // namespace ros2
 }  // namespace carla
