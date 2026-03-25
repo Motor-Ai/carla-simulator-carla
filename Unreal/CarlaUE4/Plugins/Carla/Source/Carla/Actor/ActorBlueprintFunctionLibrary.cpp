@@ -389,6 +389,19 @@ void UActorBlueprintFunctionLibrary::AddCommonCameraParameters(
   LensYSize.RecommendedValues = { TEXT("0.08") };
   LensYSize.bRestrictToRecommended = false;
 
+  // Camera Projection Mode
+  FActorVariation CameraProjectionMode;
+  CameraProjectionMode.Id = TEXT("projection_mode");
+  CameraProjectionMode.Type = EActorAttributeType::String;
+  CameraProjectionMode.RecommendedValues = { TEXT("perspective"), TEXT("orthographic") };
+  CameraProjectionMode.bRestrictToRecommended = true;
+
+  FActorVariation OrthoWidth;
+  OrthoWidth.Id = TEXT("ortho_width");
+  OrthoWidth.Type = EActorAttributeType::Float;
+  OrthoWidth.RecommendedValues = { TEXT("10.0") };
+  OrthoWidth.bRestrictToRecommended = false;
+
   Definition.Variations.Append({
       ResX,
       ResY,
@@ -398,7 +411,9 @@ void UActorBlueprintFunctionLibrary::AddCommonCameraParameters(
       LensK,
       LensKcube,
       LensXSize,
-      LensYSize});
+      LensYSize,
+      CameraProjectionMode,
+      OrthoWidth});
 }
 
 void UActorBlueprintFunctionLibrary::AddCommonPostProcessingEffectsParameters(
@@ -2100,6 +2115,18 @@ void UActorBlueprintFunctionLibrary::SetCamera(
       RetrieveActorAttributeToInt("image_size_y", Description.Variations, 600));
   Camera->SetFOVAngle(
       RetrieveActorAttributeToFloat("fov", Description.Variations, 90.0f));
+  if (RetrieveActorAttributeToString("projection_mode", Description.Variations, "perspective") == "perspective")
+  {
+    Camera->SetProjectionMode(ECameraProjectionMode::Type::Perspective);
+  }
+  else
+  {
+    Camera->SetProjectionMode(ECameraProjectionMode::Type::Orthographic);
+    // ortho_width is in meters, Unreal needs centimeter
+    Camera->SetOrthoWidth(
+      RetrieveActorAttributeToFloat("ortho_width", Description.Variations, 10.0f)*100.f);
+  }
+  
   if (Description.Variations.Contains("enable_postprocess_effects"))
   {
     Camera->EnablePostProcessingEffects(

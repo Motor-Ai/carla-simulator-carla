@@ -447,6 +447,30 @@ float ASceneCaptureSensor::GetChromAberrOffset() const
   return CaptureComponent2D->PostProcessSettings.ChromaticAberrationStartOffset;
 }
 
+void ASceneCaptureSensor::SetProjectionMode(ECameraProjectionMode::Type ProjectionMode)
+{
+  check(CaptureComponent2D != nullptr);
+  CaptureComponent2D->ProjectionType = ProjectionMode;
+}
+  
+ECameraProjectionMode::Type ASceneCaptureSensor::GetProjectionMode() const
+{
+  check(CaptureComponent2D != nullptr);
+  return CaptureComponent2D->ProjectionType;
+}
+
+void ASceneCaptureSensor::SetOrthoWidth(float OrthoWidth)
+{
+  check(CaptureComponent2D != nullptr);
+  CaptureComponent2D->OrthoWidth = OrthoWidth;
+}
+
+float ASceneCaptureSensor::GetOrthoWidth() const
+{
+  check(CaptureComponent2D != nullptr);
+  return CaptureComponent2D->OrthoWidth;
+}
+
 void ASceneCaptureSensor::EnqueueRenderSceneImmediate() {
   // 
   if( bEnableGBuffers )

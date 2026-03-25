@@ -42,13 +42,43 @@ sensor_msgs::msg::CameraInfo UePublisherBaseCamera<ALLOCATOR>::CreateCameraInfo(
   sensor_msgs::msg::CameraInfo camera_info;
   camera_info.height(height);
   camera_info.width(width);
-  camera_info.distortion_model("plumb_bob");
+
+  bool is_perspective_camera = true;
+  double ortho_width = 10.;
+  auto find_result = GetSensorActorDefinition()->attributes.find("projection_mode");
+  if ( find_result != GetSensorActorDefinition()->attributes.end() )
+  {
+    is_perspective_camera = find_result->second == "perspective";
+    if ( !is_perspective_camera )
+    {
+      find_result = GetSensorActorDefinition()->attributes.find("ortho_width");
+      if ( find_result != GetSensorActorDefinition()->attributes.end() )
+      {
+        try {
+          ortho_width = std::stod(find_result->second);
+        }
+        catch (...)
+        {} 
+      }
+    }
+  }
 
   const double cx = static_cast<double>(width) / 2.0;
   const double cy = static_cast<double>(height) / 2.0;
-  const double fx = static_cast<double>(width) / (2.0 * std::tan(fov) * M_PI / 360.0);
+
+  double fx;
+  if ( is_perspective_camera )
+  {
+    fx = static_cast<double>(width) / (2.0 * std::tan(fov) * M_PI / 360.0);
+  }
+  else
+  {
+    double pixel_per_meter = static_cast<double>(width) / ortho_width;
+    fx = pixel_per_meter;
+  }
   const double fy = fx;
 
+  camera_info.distortion_model("plumb_bob");
   camera_info.d({ 0.0, 0.0, 0.0, 0.0, 0.0 });
   camera_info.k({fx, 0.0, cx, 0.0, fy, cy, 0.0, 0.0, 1.0});
   camera_info.r({ 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0 });

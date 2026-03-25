@@ -365,6 +365,18 @@ public:
   UFUNCTION(BlueprintCallable)
   float GetChromAberrOffset() const;
 
+  UFUNCTION(BlueprintCallable)
+  void SetProjectionMode(ECameraProjectionMode::Type ProjectionType);
+
+  UFUNCTION(BlueprintCallable)
+  ECameraProjectionMode::Type GetProjectionMode() const;
+
+  UFUNCTION(BlueprintCallable)
+  void SetOrthoWidth(float OrthoWidth);
+
+  UFUNCTION(BlueprintCallable)
+  float GetOrthoWidth() const;
+
   /// Use for debugging purposes only.
   UFUNCTION(BlueprintCallable)
   bool ReadPixels(TArray<FColor> &BitMap) const
