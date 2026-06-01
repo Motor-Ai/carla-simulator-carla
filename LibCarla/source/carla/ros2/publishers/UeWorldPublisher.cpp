@@ -57,6 +57,8 @@ UeWorldPublisher::UeWorldPublisher(carla::rpc::RpcServerInterface& carla_server,
     _traffic_light_objects_publisher(std::make_shared<ObjectsPublisher>(ObjectsPublisher::ObjectMode::DYNAMIC_PUBLISH_ON_CHANGE, "traffic_lights/objects")),
     _traffic_sign_actor_list_publisher(std::make_shared<CarlaActorListPublisher>("traffic_signs/actor_list")),
     _traffic_sign_objects_publisher(std::make_shared<ObjectsPublisher>(ObjectsPublisher::ObjectMode::DYNAMIC_PUBLISH_ON_CHANGE, "traffic_signs/objects")),
+    _other_actor_list_publisher(std::make_shared<CarlaActorListPublisher>("props/actor_list")),
+    _other_objects_publisher(std::make_shared<ObjectsPublisher>(ObjectsPublisher::ObjectMode::DYNAMIC_PUBLISH_ON_CHANGE, "props/objects")),
     _environment_actor_list_publisher(std::make_shared<CarlaActorListPublisher>("environment/actor_list")),
     _environment_objects_publisher(std::make_shared<ObjectsPublisher>(ObjectsPublisher::ObjectMode::STATIC_PUBLISH_ONCE, "environment/objects")),
     _carla_control_subscriber(std::make_shared<CarlaControlSubscriber>(*this, _carla_server)),
@@ -87,6 +89,8 @@ bool UeWorldPublisher::Init(std::shared_ptr<DdsDomainParticipantImpl> domain_par
                  _traffic_light_objects_publisher->Init(domain_participant) && 
                  _traffic_sign_actor_list_publisher->Init(_domain_participant_impl) &&
                  _traffic_sign_objects_publisher->Init(domain_participant) &&
+                 _other_actor_list_publisher->Init(_domain_participant_impl) &&
+                 _other_objects_publisher->Init(domain_participant) &&
                  _environment_actor_list_publisher->Init(domain_participant) &&
                  _environment_objects_publisher->Init(domain_participant) && 
                  _carla_control_subscriber->Init(domain_participant) &&
@@ -101,6 +105,7 @@ void UeWorldPublisher::Cleanup() {
   _walkers.clear();
   _traffic_lights.clear();
   _traffic_signs.clear();
+  _other_actors.clear();
   _ue_sensors.clear();
 }
 
@@ -264,6 +269,8 @@ void UeWorldPublisher::UpdateSensorDataPostAction() {
   _traffic_light_objects_publisher->Publish();
   _traffic_sign_actor_list_publisher->Publish();
   _traffic_sign_objects_publisher->Publish();
+  _other_actor_list_publisher->Publish();
+  _other_objects_publisher->Publish();
 
   for (auto& vehicle : _vehicles) {
     auto publisher = vehicle.second._vehicle_publisher;
@@ -572,6 +579,26 @@ void UeWorldPublisher::UeTrafficSign::Init(std::shared_ptr<DdsDomainParticipantI
   }
 }
 
+void UeWorldPublisher::AddOtherActorUe(std::shared_ptr<carla::ros2::types::ActorDefinition> actor_definition) {
+  if (!_initialized) {
+    return;
+  }
+
+  auto object = std::make_shared<carla::ros2::types::Object>(actor_definition);
+  auto object_result = _objects.insert({actor_definition->id, object});
+  if (!object_result.second) {
+    object_result.first->second = object;
+  }
+  _other_objects_publisher->AddObject(*object);
+  _other_objects_changed = true;
+
+  UeOtherActor ue_other_actor(actor_definition);
+  auto other_actors_result = _other_actors.insert({actor_definition->id, ue_other_actor});
+  if (!other_actors_result.second) {
+    other_actors_result.first->second = std::move(ue_other_actor);
+  }
+}
+
 void UeWorldPublisher::RemoveActor(ActorId actor) {
   if (!_initialized) {
     return;
@@ -609,6 +636,14 @@ void UeWorldPublisher::RemoveActor(ActorId actor) {
     _traffic_signs_changed = true;
   }
   _traffic_sign_objects_publisher->RemoveObject(actor);
+
+  auto other_actor_iter = _other_actors.find(actor);
+  if ( other_actor_iter != _other_actors.end() ) {
+    log_debug("ROS2::RemoveOtherActorUe(", std::to_string(*other_actor_iter->second._actor_definition), ")");
+    _other_actors.erase(other_actor_iter);
+    _other_objects_changed = true;
+    _other_objects_publisher->RemoveObject(actor);
+  }
 
   auto sensor_iter = find_ue_sensor(actor);
   if (sensor_iter!=_ue_sensors.end()) {
@@ -728,6 +763,15 @@ void UeWorldPublisher::UpdateSensorData(
           }
         }
       }
+
+      if ( !actor_processed ) {
+        auto other_actor_iter = _other_actors.find(actor_dynamic_state.id);
+        if ( other_actor_iter != _other_actors.end() ) {
+          actor_processed=true;
+            UeOtherActor& ue_other_actor = other_actor_iter->second;
+            _other_objects_publisher->UpdateObject(object);
+        }
+      }
     }
 
     if ( !actor_processed ) {
@@ -788,6 +832,17 @@ void UeWorldPublisher::UpdateSensorData(
     _traffic_sign_actor_list_publisher->UpdateCarlaActorList(actor_list);
   }
   _traffic_sign_objects_publisher->UpdateHeader(_timestamp.time());
+
+  if (_other_objects_changed) {
+    _other_objects_changed = false;
+    carla_msgs::msg::CarlaActorList actor_list;
+    for (auto const& other : _other_actors) {
+      actor_list.actors().push_back(other.second._actor_definition->carla_actor_info(_name_registry));
+    }
+    _other_actor_list_publisher->UpdateCarlaActorList(actor_list);
+  }
+  _other_objects_publisher->UpdateHeader(_timestamp.time());
+
 }
 
 void UeWorldPublisher::enable_for_ros(carla::streaming::detail::actor_id_type actor_id) {
