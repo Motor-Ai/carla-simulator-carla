@@ -71,6 +71,7 @@ public:
                    carla::ros2::types::ActorSetTransformCallback actor_set_transform_callback = nullptr);
   void AddV2XCustomSensorUe(std::shared_ptr<carla::ros2::types::SensorActorDefinition> sensor_actor_definition, 
     carla::ros2::types::V2XCustomSendCallback v2x_custom_send_callback);
+  void AddOtherActorUe(std::shared_ptr<carla::ros2::types::ActorDefinition> actor_definition);
 
   void RemoveActor(ActorId const actor);
 

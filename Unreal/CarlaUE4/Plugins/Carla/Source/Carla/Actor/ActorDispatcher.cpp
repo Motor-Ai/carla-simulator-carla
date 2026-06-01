@@ -46,6 +46,8 @@
 #  include "Carla/Sensor/SemanticSegmentationCamera.h"
 #  include "Carla/Sensor/InstanceSegmentationCamera.h"
 #  include "Carla/Sensor/V2XSensor.h"
+
+#  include "Engine/StaticMeshActor.h"
 #endif
 
 void UActorDispatcher::Bind(FActorDefinition Definition, SpawnFunctionType Functor)
@@ -262,6 +264,7 @@ void RegisterActorROS2(std::shared_ptr<carla::ros2::ROS2> ROS2, FCarlaActor* Car
   auto *Walker = Cast<AWalkerBase>(CarlaActor->GetActor());
   auto *TrafficLight = Cast<ATrafficLightBase>(CarlaActor->GetActor());
   auto *TrafficSign = Cast<ATrafficSignBase>(CarlaActor->GetActor());
+  auto *StaticMeshActor = Cast<AStaticMeshActor>(CarlaActor->GetActor());
   if ( Sensor != nullptr ) {
     auto SensorActorDefinition = std::make_shared<carla::ros2::types::SensorActorDefinition>(
       ActorNameDefinition,
@@ -341,6 +344,16 @@ void RegisterActorROS2(std::shared_ptr<carla::ros2::ROS2> ROS2, FCarlaActor* Car
       ActorNameDefinition,
       CarlaActor->GetActorInfo()->BoundingBox);
     ROS2->AddTrafficSignUe(TrafficSignActorDefinition);
+  }
+  else if ( StaticMeshActor != nullptr ) {
+    if(StaticMeshActor->GetStaticMeshComponent() != nullptr)
+    {  
+      ActorNameDefinition.city_object_label = static_cast<carla::rpc::CityObjectLabel>(ATagger::GetTagOfTaggedComponent(*StaticMeshActor->GetStaticMeshComponent()));
+    }
+    auto OtherActorDefinition = std::make_shared<carla::ros2::types::ActorDefinition>(
+      ActorNameDefinition,
+      CarlaActor->GetActorInfo()->BoundingBox);
+    ROS2->AddOtherActorUe(OtherActorDefinition);
   }
 }
 #endif

@@ -177,6 +177,11 @@ void ROS2::AddV2XCustomSensorUe(std::shared_ptr<carla::ros2::types::SensorActorD
   _world_publisher->AddV2XCustomSensorUe(sensor_actor_definition, v2x_custom_send_callback);
 }
 
+void ROS2::AddOtherActorUe(std::shared_ptr<carla::ros2::types::ActorDefinition> actor_definition) {
+  log_debug("ROS2::AddOtherActorUe(", std::to_string(*actor_definition), ")");
+  _world_publisher->AddOtherActorUe(actor_definition);
+}
+
 void ROS2::AttachActors(ActorId const child, ActorId const parent) {
   log_debug("ROS2::AttachActors[", child, "]: parent=", parent);
   _world_publisher->AttachActors(child, parent);

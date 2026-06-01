@@ -57,6 +57,9 @@ public:
       _classification = derived_object_msgs::msg::Object_Constants::CLASSIFICATION_MOTORCYCLE;
     } else if (actor_definition().base_type == "bicycle") {
       _classification = derived_object_msgs::msg::Object_Constants::CLASSIFICATION_BIKE;
+    } else if (derived_object_msgs::msg::Object_Constants::CLASSIFICATION_UNKNOWN != city_object_label_to_classification(_actor_definition->city_object_label)) {
+      // we got a stable city object label
+      _classification = city_object_label_to_classification(_actor_definition->city_object_label);
     } else {
       // as long as we don't have the concrete information within a blueprint ...
       // we estimate the class based on the vehicle mass (motorbikes are also 4wheeled vehicles!)
@@ -119,6 +122,18 @@ public:
                     "] id: ", actor_definition().id, " object_type: ", actor_definition().object_type,
                     " base_type: ", actor_definition().base_type, " ROS-class: ", classification_string());
   }
+  /**
+   * The representation of an object in the sense of derived_object_msgs::msg::Object.
+   *
+   * classification is one of the derived_object_msgs::msg::Object_Constants::CLASSIFICATION_* constants
+   */
+  explicit Object(std::shared_ptr<carla::ros2::types::ActorDefinition> actor_definition_in)
+    : _actor_definition(actor_definition_in) {
+    _classification = city_object_label_to_classification(_actor_definition->city_object_label);
+    carla::log_verbose("Creating Other Object[", actor_definition().type_id, "] id: ", actor_definition().id,
+                    " object_type: ", actor_definition().object_type,
+                    " base_type: ", actor_definition().base_type, " ROS-class: ", classification_string());
+  }
 
   explicit Object(carla::rpc::EnvironmentObject environment_object, bool enable_for_ros)
     : _actor_definition(std::make_shared<carla::ros2::types::ActorDefinition>(environment_object, enable_for_ros)) {
@@ -126,41 +141,7 @@ public:
     // derived object msgs are somewhat limited in terms of classification support
     // therefore also an actor list for environment objects will be published
     // containing the exact tag
-    switch(environment_object.type) {
-      case carla::rpc::CityObjectLabel::Pedestrians:
-          _classification = derived_object_msgs::msg::Object_Constants::CLASSIFICATION_PEDESTRIAN;
-          break;
-      case carla::rpc::CityObjectLabel::Rider:
-      case carla::rpc::CityObjectLabel::Bicycle:
-          _classification = derived_object_msgs::msg::Object_Constants::CLASSIFICATION_BIKE;
-          break;
-      case carla::rpc::CityObjectLabel::Car:
-          _classification = derived_object_msgs::msg::Object_Constants::CLASSIFICATION_CAR;
-          break;
-      case carla::rpc::CityObjectLabel::Motorcycle:
-          _classification = derived_object_msgs::msg::Object_Constants::CLASSIFICATION_MOTORCYCLE;
-          break;
-      case carla::rpc::CityObjectLabel::Bus:
-      case carla::rpc::CityObjectLabel::Truck:
-          _classification = derived_object_msgs::msg::Object_Constants::CLASSIFICATION_TRUCK;
-          break;
-      case carla::rpc::CityObjectLabel::TrafficLight:
-      case carla::rpc::CityObjectLabel::TrafficSigns:
-        _classification = derived_object_msgs::msg::Object_Constants::CLASSIFICATION_SIGN;
-        break;
-      case carla::rpc::CityObjectLabel::Train:
-          _classification = derived_object_msgs::msg::Object_Constants::CLASSIFICATION_OTHER_VEHICLE;
-          break;
-      case carla::rpc::CityObjectLabel::Poles:
-      case carla::rpc::CityObjectLabel::Fences:
-      case carla::rpc::CityObjectLabel::Walls:
-          _classification = derived_object_msgs::msg::Object_Constants::CLASSIFICATION_BARRIER;
-          break;
-      case carla::rpc::CityObjectLabel::Buildings:
-      case carla::rpc::CityObjectLabel::Static:
-      default:
-          _classification = derived_object_msgs::msg::Object_Constants::CLASSIFICATION_UNKNOWN;
-    }
+    _classification = city_object_label_to_classification(environment_object.type);
 
     // and put in our object state update
     carla::sensor::data::ActorDynamicState actor_dynamic_state;
@@ -181,6 +162,47 @@ public:
                     "] id: ", actor_id(), " object_type: ", actor_definition().object_type,
                     " base_type: ", actor_definition().base_type, " ROS-class: ", classification_string(), " Bounding Box Location ", _actor_definition->bounding_box.location);
   }
+
+   uint8_t city_object_label_to_classification(carla::rpc::CityObjectLabel const &city_object_label) const
+   {
+      uint8_t classification_result = derived_object_msgs::msg::Object_Constants::CLASSIFICATION_UNKNOWN; 
+      switch(city_object_label) {
+        case carla::rpc::CityObjectLabel::Pedestrians:
+            classification_result = derived_object_msgs::msg::Object_Constants::CLASSIFICATION_PEDESTRIAN;
+            break;
+        case carla::rpc::CityObjectLabel::Rider:
+        case carla::rpc::CityObjectLabel::Bicycle:
+            classification_result = derived_object_msgs::msg::Object_Constants::CLASSIFICATION_BIKE;
+            break;
+        case carla::rpc::CityObjectLabel::Car:
+            classification_result = derived_object_msgs::msg::Object_Constants::CLASSIFICATION_CAR;
+            break;
+        case carla::rpc::CityObjectLabel::Motorcycle:
+            classification_result = derived_object_msgs::msg::Object_Constants::CLASSIFICATION_MOTORCYCLE;
+            break;
+        case carla::rpc::CityObjectLabel::Bus:
+        case carla::rpc::CityObjectLabel::Truck:
+            classification_result = derived_object_msgs::msg::Object_Constants::CLASSIFICATION_TRUCK;
+            break;
+        case carla::rpc::CityObjectLabel::TrafficLight:
+        case carla::rpc::CityObjectLabel::TrafficSigns:
+            classification_result = derived_object_msgs::msg::Object_Constants::CLASSIFICATION_SIGN;
+            break;
+        case carla::rpc::CityObjectLabel::Train:
+            classification_result = derived_object_msgs::msg::Object_Constants::CLASSIFICATION_OTHER_VEHICLE;
+            break;
+        case carla::rpc::CityObjectLabel::Poles:
+        case carla::rpc::CityObjectLabel::Fences:
+        case carla::rpc::CityObjectLabel::Walls:
+            classification_result = derived_object_msgs::msg::Object_Constants::CLASSIFICATION_BARRIER;
+            break;
+        case carla::rpc::CityObjectLabel::Buildings:
+        case carla::rpc::CityObjectLabel::Static:
+        default:
+            classification_result = derived_object_msgs::msg::Object_Constants::CLASSIFICATION_UNKNOWN;
+      }
+      return classification_result;
+   }
 
   ~Object() = default;
   Object(const Object&) = delete;

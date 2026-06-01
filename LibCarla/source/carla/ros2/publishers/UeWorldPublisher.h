@@ -109,6 +109,7 @@ public:
   void AddTrafficLightUe(
       std::shared_ptr<carla::ros2::types::TrafficLightActorDefinition> traffic_light_actor_definition);
   void AddTrafficSignUe(std::shared_ptr<carla::ros2::types::TrafficSignActorDefinition> traffic_sign_actor_definition);
+  void AddOtherActorUe(std::shared_ptr<carla::ros2::types::ActorDefinition> actor_definition);
   void AddSensorUe(std::shared_ptr<carla::ros2::types::SensorActorDefinition> sensor_actor_definition,
                    carla::ros2::types::ActorSetTransformCallback actor_set_transform_callback = nullptr);
   void AddV2XCustomSensorUe(std::shared_ptr<carla::ros2::types::SensorActorDefinition> sensor_actor_definition, 
@@ -213,6 +214,13 @@ private:
   };
   std::unordered_map<ActorId, UeTrafficSign> _traffic_signs;
 
+  struct UeOtherActor {
+    explicit UeOtherActor(std::shared_ptr<carla::ros2::types::ActorDefinition> actor_definition)
+      : _actor_definition(actor_definition) {}
+    std::shared_ptr<carla::ros2::types::ActorDefinition> _actor_definition;
+  };
+  std::unordered_map<ActorId, UeOtherActor> _other_actors;
+
   struct UeSensor {
     UeSensor(std::shared_ptr<carla::ros2::types::SensorActorDefinition> sensor_actor_definition_)
       : sensor_actor_record(std::make_shared<ROS2NameRecord>(sensor_actor_definition_)) {}
@@ -261,6 +269,10 @@ private:
   bool _traffic_signs_changed{true};
   std::shared_ptr<CarlaActorListPublisher> _traffic_sign_actor_list_publisher;
   std::shared_ptr<ObjectsPublisher> _traffic_sign_objects_publisher;
+
+  bool _other_objects_changed{true};
+  std::shared_ptr<CarlaActorListPublisher> _other_actor_list_publisher;
+  std::shared_ptr<ObjectsPublisher> _other_objects_publisher;
 
   std::shared_ptr<CarlaActorListPublisher> _environment_actor_list_publisher;
   std::shared_ptr<ObjectsPublisher> _environment_objects_publisher;
