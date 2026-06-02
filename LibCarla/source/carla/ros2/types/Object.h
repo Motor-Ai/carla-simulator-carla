@@ -287,7 +287,7 @@ public:
    */
   bool has_dynamic_data_changed(derived_object_msgs::msg::Object const &other) const {
      return (other.id()!=actor_definition().id)
-           || (other.pose() != _transform.pose())
+           || (other.pose() != get_center_pose())
            || (other.twist() != _accelerated_movement.absolute_twist())
            || (other.accel() != _accelerated_movement.absolute_accel());
   }
