@@ -31,7 +31,7 @@ public:
 
   UePublisherBaseCamera(std::shared_ptr<carla::ros2::types::SensorActorDefinition> sensor_actor_definition,
                         std::shared_ptr<TransformPublisher> transform_publisher);
-  virtual ~UePublisherBaseCamera() = default;
+  virtual ~UePublisherBaseCamera();
 
   /**
    * Some Encodings from
@@ -55,12 +55,21 @@ public:
   bool SubscribersConnected() const override;
 
   /**
+   * Override frame_id() so that the base-class UpdateTransform publishes the moving body frame
+   * as "<base_frame_id>_link".  The optical frame "<base_frame_id>" is the static child of that.
+   */
+  std::string frame_id() const override;
+
+  /**
    * Implements UePublisherBase::UpdateSensorData() interface
    */
   void UpdateSensorData(std::shared_ptr<carla::sensor::s11n::SensorHeaderSerializer::Header const> sensor_header,
                         const carla::SharedBufferView buffer_view) override;
 
 protected:
+  /** The ROS camera optical frame — used for image/camera_info headers and as the static TF child. */
+  std::string optical_frame_id() const { return ROS2NameRecord::frame_id(); }
+
   sensor_msgs::msg::CameraInfo CreateCameraInfo(uint32_t height, uint32_t width, double fov);
 
   void UpdateCameraInfo(const builtin_interfaces::msg::Time &stamp, sensor_msgs::msg::CameraInfo const &camera_info);

@@ -26,7 +26,7 @@ public:
   ROS2NameRecord(ROS2NameRecord&&) = default;
   ROS2NameRecord& operator=(ROS2NameRecord&&) = default;
 
-  std::string frame_id() const;
+  virtual std::string frame_id() const;
 
   std::string parent_frame_id() const;
 

@@ -19,16 +19,57 @@ UePublisherBaseCamera<ALLOCATOR>::UePublisherBaseCamera(
     _camera_info(std::make_shared<UeCameraInfoPublisherImpl>()) {}
 
 template <class ALLOCATOR>
+UePublisherBaseCamera<ALLOCATOR>::~UePublisherBaseCamera() {
+  // frame_id() is still virtual and returns base+"_link" here — remove the body frame.
+  _transform_publisher->RemoveTransform(frame_id());
+  // Also remove the optical frame; ~PublisherBaseTransform() will call RemoveTransform() too
+  // but by then the vtable has unwound past UePublisherBaseCamera so it sees the base frame_id()
+  // (same string) — the duplicate remove is harmless.
+  _transform_publisher->RemoveTransform(optical_frame_id());
+}
+
+template <class ALLOCATOR>
+std::string UePublisherBaseCamera<ALLOCATOR>::frame_id() const {
+  return ROS2NameRecord::frame_id() + "_link";
+}
+
+template <class ALLOCATOR>
 bool UePublisherBaseCamera<ALLOCATOR>::Init(std::shared_ptr<DdsDomainParticipantImpl> domain_participant) {
   std::string image_topic_name = "image";
+  std::string camera_info_topic_name = get_topic_name("camera_info");
   if ( GetSensorActorDefinition()->ros_name_is_absolute ) {
     // user wants exact topic name for image
     image_topic_name = "";
+    const std::string topic = get_topic_name();
+    const std::string image_suffix = "/image";
+    if (topic.size() >= image_suffix.size() &&
+        topic.compare(topic.size() - image_suffix.size(), image_suffix.size(), image_suffix) == 0) {
+      camera_info_topic_name = topic.substr(0, topic.size() - image_suffix.size()) + "/camera_info";
+    }
   }
-  return _image->InitHistoryPreallocatedWithReallocMemoryMode(domain_participant, get_topic_name(image_topic_name),
-                                                              get_topic_qos()) &&
-         // camera info uses standard publisher qos
-         _camera_info->Init(domain_participant, get_topic_name("camera_info"), PublisherBase::get_topic_qos());
+  bool result =
+      _image->InitHistoryPreallocatedWithReallocMemoryMode(domain_participant, get_topic_name(image_topic_name),
+                                                           get_topic_qos()) &&
+      // camera info uses standard publisher qos
+      _camera_info->Init(domain_participant, camera_info_topic_name, PublisherBase::get_topic_qos());
+
+  if (result) {
+    // Publish the fixed static transform from the camera body frame to the camera optical frame.
+    // ROS REP-103 camera optical convention: X-right, Y-down, Z-forward
+    // vs. camera body frame (after CARLA→ROS): X-forward, Y-left, Z-up
+    // R columns = optical axes in camera_link: X=right=(0,-1,0), Y=down=(0,0,-1), Z=fwd=(1,0,0)
+    // → R = [[0,0,1],[-1,0,0],[0,-1,0]] → q = (x=-0.5, y=0.5, z=-0.5, w=0.5)
+    geometry_msgs::msg::Transform optical_correction;
+    geometry_msgs::msg::Quaternion q_opt;
+    q_opt.x(-0.5); q_opt.y(0.5); q_opt.z(-0.5); q_opt.w(0.5);
+    optical_correction.rotation(q_opt);
+    // translation is zero: optical and body frames share the same origin
+    // child = optical_frame_id() (= ROS2NameRecord::frame_id(), no "_link")
+    // parent = frame_id() (= ROS2NameRecord::frame_id() + "_link", the moving body frame)
+    _transform_publisher->AddTransform(builtin_interfaces::msg::Time{}, optical_frame_id(), frame_id(),
+                                       optical_correction, TransformPublisher::TransformPublisherMode::MODE_STATIC);
+  }
+  return result;
 }
 
 template <class ALLOCATOR>
@@ -74,7 +115,7 @@ sensor_msgs::msg::CameraInfo UePublisherBaseCamera<ALLOCATOR>::CreateCameraInfo(
   double fx;
   if ( is_perspective_camera )
   {
-    fx = static_cast<double>(width) / (2.0 * std::tan(fov) * M_PI / 360.0);
+    fx = static_cast<double>(width) / (2.0 * std::tan(fov * M_PI / 360.0));
   }
   else
   {
@@ -105,7 +146,7 @@ template <class ALLOCATOR>
 void UePublisherBaseCamera<ALLOCATOR>::UpdateCameraInfo(const builtin_interfaces::msg::Time &stamp,
                                                         sensor_msgs::msg::CameraInfo const &camera_info) {
   _camera_info->Message() = camera_info;
-  _camera_info->SetMessageHeader(stamp, frame_id());
+  _camera_info->SetMessageHeader(stamp, optical_frame_id());
   _camera_info_initialized = true;
 }
 
@@ -113,7 +154,7 @@ template <class ALLOCATOR>
 void UePublisherBaseCamera<ALLOCATOR>::UpdateImageHeader(const builtin_interfaces::msg::Time &stamp,
                                                          sensor_msgs::msg::CameraInfo const &camera_info) {
   // Handle image data
-  _image->SetMessageHeader(stamp, frame_id());
+  _image->SetMessageHeader(stamp, optical_frame_id());
   _image->Message().width(camera_info.width());
   _image->Message().height(camera_info.height());
   _image->Message().encoding(encoding_as_string());
