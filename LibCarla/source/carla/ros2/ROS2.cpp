@@ -22,6 +22,7 @@
 #include "carla/ros2/impl/DdsDomainParticipantImpl.h"
 #include "carla/ros2/publishers/UeWorldPublisher.h"
 #include "carla/ros2/services/DestroyObjectService.h"
+#include "carla/ros2/services/EnvironmentObjectService.h"
 #include "carla/ros2/services/GetAvailableMapsService.h"
 #include "carla/ros2/services/GetBlueprintsService.h"
 #include "carla/ros2/services/LoadMapService.h"
@@ -108,6 +109,11 @@ void ROS2::NotifyBeginEpisode() {
       *_carla_server, carla::ros2::types::ActorNameDefinition::CreateFromRoleName("set_episode_settings"));
   set_epsisode_settings_service->Init(_domain_participant_impl);
   _services.push_back(set_epsisode_settings_service);
+
+  auto environment_object_service = std::make_shared<carla::ros2::EnvironmentObjectService>(
+      *_carla_server, carla::ros2::types::ActorNameDefinition::CreateFromRoleName("enable_environment_objects"));
+  environment_object_service->Init(_domain_participant_impl);
+  _services.push_back(environment_object_service);
   
   // inform load map service about new episode to trigger pending map change if there is any
   _load_map_service->NotifyBeginEpisode();
