@@ -195,8 +195,8 @@ public:
   void SetFailureState(const carla::rpc::VehicleFailureState &FailureState);
 
   UFUNCTION(BlueprintNativeEvent)
-  bool IsTwoWheeledVehicle();
   virtual bool IsTwoWheeledVehicle_Implementation() {
+  bool IsTwoWheeledVehicle() const;
     return false;
   }
 
