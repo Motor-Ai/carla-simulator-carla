@@ -139,7 +139,7 @@ FBoundingBox UBoundingBoxCalculator::GetVehicleBoundingBox(
   TArray<USkeletalMeshComponent*> SkeletalMeshComps;
   Vehicle->GetComponents<USkeletalMeshComponent>(SkeletalMeshComps);
 
-  if(SkeletalMeshComps.Num() > 1)
+  if (Vehicle->IsTwoWheeledVehicle() && SkeletalMeshComps.Num() > 1)
   {
     FVector VehicleLocation = Vehicle->GetActorLocation();
     FRotator VehicleRotation = Vehicle->GetActorRotation();
