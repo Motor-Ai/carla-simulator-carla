@@ -280,8 +280,8 @@ void RegisterActorROS2(std::shared_ptr<carla::ros2::ROS2> ROS2, FCarlaActor* Car
     }
     else if (SceneCaptureCamera != nullptr) {
       // scene capture cameras are allowed to be moved by external user
-      carla::ros2::types::ActorSetTransformCallback ActorSetTransformCallback = [Sensor](carla::ros2::types::Transform &Transform) -> void {
-        Sensor->SetActorTransform(Transform.GetTransform());
+      carla::ros2::types::ActorSetTransformCallback ActorSetTransformCallback = [CarlaActor](carla::ros2::types::Transform &Transform) -> void {
+        CarlaActor->SetActorGlobalTransform(Transform.GetTransform());
       };
       ROS2->AddSensorUe(SensorActorDefinition, ActorSetTransformCallback);
     }
@@ -310,10 +310,10 @@ void RegisterActorROS2(std::shared_ptr<carla::ros2::ROS2> ROS2, FCarlaActor* Car
     carla::ros2::types::VehicleAckermannControlCallback VehicleAckermannControlCallback = [Vehicle](carla::ros2::types::VehicleAckermannControl const &Source) -> void {
       Vehicle->ApplyVehicleAckermannControl(Source.GetVehicleAckermannControl(), EVehicleInputPriority::User);
     };
-    carla::ros2::types::ActorSetTransformCallback VehicleSetTransformCallback = [Vehicle](carla::ros2::types::Transform &Transform) -> void {
+    carla::ros2::types::ActorSetTransformCallback VehicleSetTransformCallback = [CarlaActor](carla::ros2::types::Transform &Transform) -> void {
       // TeleportPhysics is required here - without it, the physics-simulated rigid body keeps its prior pose/velocity and the
       // vehicle movement component fights to catch up to the new transform instead of snapping to it.
-      Vehicle->SetActorTransform(Transform.GetTransform(), false, nullptr, ETeleportType::TeleportPhysics);
+      CarlaActor->SetActorGlobalTransform(Transform.GetTransform(), ETeleportType::TeleportPhysics);
     };
 
     ROS2->AddVehicleUe(VehicleActorDefinition, VehicleControlCallback, VehicleAckermannControlCallback, VehicleSetTransformCallback);
