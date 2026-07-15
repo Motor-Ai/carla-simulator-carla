@@ -841,12 +841,22 @@ FVehicleTelemetryData ACarlaWheeledVehicle::GetVehicleTelemetryData() const
   TelemetryData.Gear = GetVehicleCurrentGear();
   TelemetryData.Drag = MovementComponent->DebugDragMagnitude / 100.0f;  // kg*cm/s2 to Kg*m/s2
 
-  // Wheels telemetry data
+  // Wheels telemetry data is only available while physics simulation is active
+  // (e.g. not while another client has called SetSimulatePhysics(false), which
+  // tears down the PxVehicle and unregisters it from the vehicle manager).
+  if (!bPhysicsEnabled || MovementComponent->PVehicle == nullptr)
+  {
+    return TelemetryData;
+  }
+
   FPhysXVehicleManager* MyVehicleManager = FPhysXVehicleManager::GetVehicleManagerFromScene(GetWorld()->GetPhysicsScene());
 
   SCOPED_SCENE_READ_LOCK(MyVehicleManager->GetScene());
   PxWheelQueryResult* WheelsStates = MyVehicleManager->GetWheelsStates_AssumesLocked(MovementComponent);
-  check(WheelsStates);
+  if (WheelsStates == nullptr)
+  {
+    return TelemetryData;
+  }
 
   TArray<FWheelTelemetryData> Wheels;
   for (uint32 w = 0; w < MovementComponent->PVehicle->mWheelsSimData.getNbWheels(); ++w)
