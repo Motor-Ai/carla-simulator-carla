@@ -33,9 +33,21 @@ bool WorldInfoPublisher::SubscribersConnected() const {
 void WorldInfoPublisher::UpdateSensorDataPreAction() {
   if ( _map_updated )
   {
+    auto map_info_response = _carla_server.call_get_map_info();
+    if (map_info_response.HasError()) {
+      carla::log_warning("WorldInfoPublisher: Failed to get map info "
+                         "from CARLA server: ", map_info_response.GetError().What());
+      return;
+    }
+    auto map_data_response = _carla_server.call_get_map_data();
+    if (map_data_response.HasError()) {
+      carla::log_warning("WorldInfoPublisher: Failed to get map data "
+                         "from CARLA server: ", map_data_response.GetError().What());
+      return;
+    }
     _impl->Message().carla_version(carla::version());
-    _impl->Message().map_name(_carla_server.call_get_map_info().Get().name);
-    _impl->Message().opendrive(_carla_server.call_get_map_data().Get());
+    _impl->Message().map_name(map_info_response.Get().name);
+    _impl->Message().opendrive(map_data_response.Get());
     _impl->SetMessageUpdated();
     _map_updated = false;
   }

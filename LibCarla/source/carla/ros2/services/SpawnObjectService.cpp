@@ -46,6 +46,12 @@ carla_msgs::srv::SpawnObject_Response SpawnObjectService::SpawnObject(
     if (request.random_pose()) {
       std::vector<geom::Transform> spawn_points;
       auto map_info = _carla_server.call_get_map_info();
+      if (map_info.HasError()) {
+        log_error("ROS2:SpawnObjectService failed to retrieve map info: ", map_info.GetError().What());
+        response.error_string("SpawnObjectService: failed to retrieve map info");
+        response.id(-1);
+        return response;
+      }
       std::vector<geom::Transform> result;
       std::sample(map_info.Get().recommended_spawn_points.begin(), map_info.Get().recommended_spawn_points.end(),
                   std::back_inserter(result), 1, std::mt19937{std::random_device{}()});
@@ -63,8 +69,16 @@ carla_msgs::srv::SpawnObject_Response SpawnObjectService::SpawnObject(
       transform = ros_transform.GetTransform();
     }
     log_debug("ROS2:SpawnObjectService processing request. Pose: ", std::to_string(transform), ")");
+    auto actor_definitions_response = _carla_server.call_get_actor_definitions();
+    if (actor_definitions_response.HasError()) {
+      log_error("ROS2:SpawnObjectService failed to retrieve actor definitions: ",
+                actor_definitions_response.GetError().What());
+      response.error_string("SpawnObjectService: failed to retrieve actor definitions");
+      response.id(-1);
+      return response;
+    }
     auto blueprints =
-        carla::actors::BlueprintLibrary(_carla_server.call_get_actor_definitions().Get()).Filter(request.blueprint().id());
+        carla::actors::BlueprintLibrary(actor_definitions_response.Get()).Filter(request.blueprint().id());
     if (blueprints->empty()) {
       log_error("ROS2:SpawnObjectService failed to retrieve any matching blueprint", request.blueprint().id());
       response.error_string("SpawnObjectService: failed to retrieve matching blueprint");

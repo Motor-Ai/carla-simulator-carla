@@ -656,10 +656,16 @@ void UeWorldPublisher::RemoveActor(ActorId actor) {
 void UeWorldPublisher::UpdateAndPublishStatus() {
   auto const synchronization_window_status = _carla_server.call_get_synchronization_window_status();
   if (_frame_changed || synchronization_window_status.Get().first) {
+    auto episode_settings_response = _carla_server.call_get_episode_settings();
+    if (episode_settings_response.HasError()) {
+      carla::log_warning("UeWorldPublisher: Failed to get episode settings "
+                         "from CARLA server: ", episode_settings_response.GetError().What());
+      return;
+    }
     _frame_changed = false;
     carla_msgs::msg::CarlaStatus status;
     status.frame(_frame);
-    carla::ros2::types::EpisodeSettings carla_episode_settings(_carla_server.call_get_episode_settings().Get());
+    carla::ros2::types::EpisodeSettings carla_episode_settings(episode_settings_response.Get());
     status.episode_settings( carla_episode_settings.episode_settings());
     status.header().stamp(_timestamp.time());
     status.header().frame_id("");

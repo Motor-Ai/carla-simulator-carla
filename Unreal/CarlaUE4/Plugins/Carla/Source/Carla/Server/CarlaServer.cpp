@@ -470,7 +470,6 @@ void FCarlaServer::FPimpl::BindActions()
 
   BIND_SYNC(load_new_episode) << [this](const std::string &map_name, const bool reset_settings, cr::MapLayer map_layers) -> R<void>
   {
-    REQUIRE_CARLA_EPISODE();
     return call_load_new_episode(map_name, reset_settings, map_layers);
   };
 
@@ -731,13 +730,11 @@ void FCarlaServer::FPimpl::BindActions()
 
   BIND_SYNC(get_map_info) << [this]() -> R<cr::MapInfo>
   {
-    REQUIRE_CARLA_EPISODE();
     return call_get_map_info();
   };
 
   BIND_SYNC(get_map_data) <<  [this]() -> R<std::string>
   {
-    REQUIRE_CARLA_EPISODE();
     return call_get_map_data();
   };
 
@@ -799,20 +796,17 @@ void FCarlaServer::FPimpl::BindActions()
 
   BIND_SYNC(get_episode_settings) << [this]() -> R<cr::EpisodeSettings>
   {
-    REQUIRE_CARLA_EPISODE();
     return call_get_episode_settings();
   };
 
   BIND_SYNC(set_episode_settings) << [this](
       const cr::EpisodeSettings &settings) -> R<uint64_t>
   {
-    REQUIRE_CARLA_EPISODE();
     return call_set_episode_settings(settings);
   };
 
   BIND_SYNC(get_actor_definitions) <<  [this]() -> R<std::vector<carla::rpc::ActorDefinition>>
   {
-    REQUIRE_CARLA_EPISODE();
     return call_get_actor_definitions();
   };
 
@@ -850,13 +844,11 @@ void FCarlaServer::FPimpl::BindActions()
 
   BIND_SYNC(get_environment_objects) << [this](uint8 QueriedTag) -> R<std::vector<cr::EnvironmentObject>>
   {
-    REQUIRE_CARLA_EPISODE();
     return call_get_environment_objects(QueriedTag);
   };
 
   BIND_SYNC(enable_environment_objects) << [this](std::vector<uint64_t> EnvObjectIds, bool Enable) -> R<void>
   {
-    REQUIRE_CARLA_EPISODE();
     return call_enable_environment_objects(EnvObjectIds, Enable);
   };
 
@@ -871,14 +863,12 @@ void FCarlaServer::FPimpl::BindActions()
 
   BIND_SYNC(get_weather_parameters) << [this]() -> R<cr::WeatherParameters>
   {
-    REQUIRE_CARLA_EPISODE();
     return call_get_weather_parameters();
   };
 
   BIND_SYNC(set_weather_parameters) << [this](
       const cr::WeatherParameters &weather) -> R<void>
   {
-    REQUIRE_CARLA_EPISODE();
     return call_set_weather_parameters(weather);
   };
   
@@ -930,7 +920,6 @@ void FCarlaServer::FPimpl::BindActions()
       carla::rpc::ActorDescription Description,
       const carla::rpc::Transform &Transform) -> R<carla::rpc::Actor>
   {
-    REQUIRE_CARLA_EPISODE();
     return call_spawn_actor(Description, Transform);
   };
 
@@ -941,13 +930,11 @@ void FCarlaServer::FPimpl::BindActions()
     carla::rpc::AttachmentType InAttachmentType,
     const std::string& socket_name) ->  R<carla::rpc::Actor>
   {
-    REQUIRE_CARLA_EPISODE();
     return call_spawn_actor_with_parent(Description, Transform, ParentId, InAttachmentType, socket_name);
   };
 
   BIND_SYNC(destroy_actor) << [this](carla::rpc::ActorId ActorId) -> R<bool>
   {
-    REQUIRE_CARLA_EPISODE();
     return call_destroy_actor(ActorId);
   };
 
@@ -988,21 +975,18 @@ void FCarlaServer::FPimpl::BindActions()
   BIND_SYNC(enable_actor_for_ros) << [this](carla::rpc::ActorId ActorId) ->
                                  R<void>
   {
-    REQUIRE_CARLA_EPISODE();
     return call_enable_actor_for_ros(ActorId);
   };
 
   BIND_SYNC(disable_actor_for_ros) << [this](carla::rpc::ActorId ActorId) ->
                                  R<void>
   {
-    REQUIRE_CARLA_EPISODE();
     return call_disable_actor_for_ros(ActorId);
   };
 
   BIND_SYNC(is_actor_enabled_for_ros) << [this](carla::rpc::ActorId ActorId) ->
                                  R<bool>
   {
-    REQUIRE_CARLA_EPISODE();
     return call_is_actor_enabled_for_ros(ActorId);
   };
 
@@ -1850,7 +1834,6 @@ BIND_SYNC(send) << [this](
   BIND_SYNC(get_vehicle_light_state) << [this](
       cr::ActorId ActorId) -> R<cr::VehicleLightState>
   {
-    REQUIRE_CARLA_EPISODE();
     return call_get_vehicle_light_state(ActorId);
   };
 
@@ -2428,7 +2411,6 @@ BIND_SYNC(send) << [this](
   BIND_SYNC(get_telemetry_data) << [this](
       cr::ActorId ActorId) -> R<cr::VehicleTelemetryData>
   {
-    REQUIRE_CARLA_EPISODE();
     return call_get_telemetry_data(ActorId);
   };
 
@@ -3305,6 +3287,7 @@ BIND_SYNC(send) << [this](
 
 carla::rpc::Response<void> FCarlaServer::FPimpl::call_load_new_episode(const std::string &map_name, const bool reset_settings, carla::rpc::MapLayer map_layers)
 {
+  REQUIRE_CARLA_EPISODE();
   UCarlaGameInstance* GameInstance = UCarlaStatics::GetGameInstance(Episode->GetWorld());
   if (!GameInstance)
   {
@@ -3325,11 +3308,13 @@ carla::rpc::Response<void> FCarlaServer::FPimpl::call_load_new_episode(const std
 
 carla::rpc::Response<carla::rpc::EpisodeSettings> FCarlaServer::FPimpl::call_get_episode_settings()
 {
+  REQUIRE_CARLA_EPISODE();
   return carla::rpc::EpisodeSettings{Episode->GetSettings()};
 }
 
 carla::rpc::Response<uint64_t> FCarlaServer::FPimpl::call_set_episode_settings(carla::rpc::EpisodeSettings const &settings)
 {
+  REQUIRE_CARLA_EPISODE();
   Episode->ApplySettings(settings);
   StreamingServer.SetSynchronousMode(settings.synchronous_mode);
 
@@ -3368,11 +3353,17 @@ carla::rpc::Response<std::vector<std::string>> FCarlaServer::FPimpl::call_get_av
 }
 
 carla::rpc::Response<std::string> FCarlaServer::FPimpl::call_get_map_data() {
+  REQUIRE_CARLA_EPISODE();
   return carla::rpc::FromLongFString(UOpenDrive::GetXODR(Episode->GetWorld()));
 };
 
 carla::rpc::Response<carla::rpc::MapInfo> FCarlaServer::FPimpl::call_get_map_info() {
+  REQUIRE_CARLA_EPISODE();
   ACarlaGameModeBase* GameMode = UCarlaStatics::GetGameMode(Episode->GetWorld());
+  if (!GameMode)
+  {
+    RESPOND_ERROR("unable to find CARLA game mode");
+  }
   const auto &SpawnPoints = Episode->GetRecommendedSpawnPoints();
   FString FullMapPath = GameMode->GetFullMapPath();
   FString MapDir = FullMapPath.RightChop(FullMapPath.Find("Content/", ESearchCase::CaseSensitive) + 8);
@@ -3383,10 +3374,12 @@ carla::rpc::Response<carla::rpc::MapInfo> FCarlaServer::FPimpl::call_get_map_inf
 };
 
 carla::rpc::Response<std::vector<carla::rpc::ActorDefinition> > FCarlaServer::FPimpl::call_get_actor_definitions() {
+  REQUIRE_CARLA_EPISODE();
   return MakeVectorFromTArray<carla::rpc::ActorDefinition>(Episode->GetActorDefinitions());
 }
 
 carla::rpc::Response<carla::rpc::Actor> FCarlaServer::FPimpl::call_spawn_actor(carla::rpc::ActorDescription Description, const carla::rpc::Transform &Transform) {
+  REQUIRE_CARLA_EPISODE();
 
   auto Result = Episode->SpawnActorWithInfo(Transform, std::move(Description));
 
@@ -3411,6 +3404,7 @@ carla::rpc::Response<carla::rpc::Actor> FCarlaServer::FPimpl::call_spawn_actor_w
       carla::rpc::ActorId ParentId,
       carla::rpc::AttachmentType InAttachmentType,
       const std::string& socket_name) {
+  REQUIRE_CARLA_EPISODE();
 
   auto Result = Episode->SpawnActorWithInfo(Transform, std::move(Description));
   if (Result.Key != EActorSpawnResultStatus::Success)
@@ -3454,6 +3448,7 @@ carla::rpc::Response<carla::rpc::Actor> FCarlaServer::FPimpl::call_spawn_actor_w
 }
 
 carla::rpc::Response<bool> FCarlaServer::FPimpl::call_destroy_actor(carla::rpc::ActorId ActorId) {
+  REQUIRE_CARLA_EPISODE();
   FCarlaActor* CarlaActor = Episode->FindCarlaActor(ActorId);
   if ( !CarlaActor )
   {
@@ -3472,6 +3467,7 @@ carla::rpc::Response<bool> FCarlaServer::FPimpl::call_destroy_actor(carla::rpc::
 
 carla::rpc::Response<void> FCarlaServer::FPimpl::call_enable_actor_for_ros(carla::rpc::ActorId ActorId)
 {
+  REQUIRE_CARLA_EPISODE();
   auto check_result = CheckHandleActorInSecondaryServer(ActorId);
   if ( !check_result.actor_exists )
   {
@@ -3492,6 +3488,7 @@ carla::rpc::Response<void> FCarlaServer::FPimpl::call_enable_actor_for_ros(carla
 
 carla::rpc::Response<void> FCarlaServer::FPimpl::call_disable_actor_for_ros(carla::rpc::ActorId ActorId)
 {
+  REQUIRE_CARLA_EPISODE();
   auto check_result = CheckHandleActorInSecondaryServer(ActorId);
   if ( !check_result.actor_exists )
   {
@@ -3512,6 +3509,7 @@ carla::rpc::Response<void> FCarlaServer::FPimpl::call_disable_actor_for_ros(carl
 
 carla::rpc::Response<bool> FCarlaServer::FPimpl::call_is_actor_enabled_for_ros(carla::rpc::ActorId ActorId)
 {
+  REQUIRE_CARLA_EPISODE();
   auto check_result = CheckHandleActorInSecondaryServer(ActorId);
   if ( !check_result.actor_exists )
   {
@@ -3531,6 +3529,7 @@ carla::rpc::Response<bool> FCarlaServer::FPimpl::call_is_actor_enabled_for_ros(c
 
 carla::rpc::Response<carla::rpc::VehicleTelemetryData> FCarlaServer::FPimpl::call_get_telemetry_data(carla::rpc::ActorId ActorId)
 {
+  REQUIRE_CARLA_EPISODE();
   FCarlaActor* CarlaActor = Episode->FindCarlaActor(ActorId);
       if (!CarlaActor)
   {
@@ -3554,6 +3553,7 @@ carla::rpc::Response<carla::rpc::VehicleTelemetryData> FCarlaServer::FPimpl::cal
 
 carla::rpc::Response<carla::rpc::VehicleLightState> FCarlaServer::FPimpl::call_get_vehicle_light_state(carla::rpc::ActorId ActorId)
 {
+  REQUIRE_CARLA_EPISODE();
   FCarlaActor* CarlaActor = Episode->FindCarlaActor(ActorId);
   if (!CarlaActor)
   {
@@ -3645,6 +3645,7 @@ carla::rpc::Response<uint64_t> FCarlaServer::FPimpl::call_tick(
     carla::rpc::synchronization_participant_id_type const&participant_id,
     carla::rpc::SynchronizationTickMode synchronization_tick_mode)
 {
+  REQUIRE_CARLA_EPISODE();
   auto Current = FCarlaEngine::GetFrameCounter();
 
   if ( (synchronization_tick_mode == carla::rpc::SynchronizationTickMode::FORCE_ENABLE_SYNC)
@@ -3687,6 +3688,7 @@ carla::rpc::Response<std::pair< bool , std::vector<carla::rpc::synchronization_w
 
 carla::rpc::Response<carla::rpc::WeatherParameters> FCarlaServer::FPimpl::call_get_weather_parameters()
 {
+  REQUIRE_CARLA_EPISODE();
   auto *Weather = Episode->GetWeather();
   if (Weather == nullptr)
   {
@@ -3697,6 +3699,7 @@ carla::rpc::Response<carla::rpc::WeatherParameters> FCarlaServer::FPimpl::call_g
 
 carla::rpc::Response<void> FCarlaServer::FPimpl::call_set_weather_parameters(carla::rpc::WeatherParameters const &weather_parameters)
 {
+  REQUIRE_CARLA_EPISODE();
   auto *Weather = Episode->GetWeather();
   if (Weather == nullptr)
   {
@@ -3708,6 +3711,7 @@ carla::rpc::Response<void> FCarlaServer::FPimpl::call_set_weather_parameters(car
 
 carla::rpc::Response<std::vector<carla::rpc::EnvironmentObject>> FCarlaServer::FPimpl::call_get_environment_objects(uint8_t QueriedTag)
 {
+  REQUIRE_CARLA_EPISODE();
   ACarlaGameModeBase* GameMode = UCarlaStatics::GetGameMode(Episode->GetWorld());
   if (!GameMode)
   {
@@ -3729,6 +3733,7 @@ carla::rpc::Response<void> FCarlaServer::FPimpl::call_enable_environment_objects
     const std::vector<uint64_t>& EnvObjectIds,
     bool Enable)
 {
+  REQUIRE_CARLA_EPISODE();
   ACarlaGameModeBase* GameMode = UCarlaStatics::GetGameMode(Episode->GetWorld());
   if (!GameMode)
   {

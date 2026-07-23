@@ -33,7 +33,16 @@ void LoadMapService::LoadMap(
   bool request_failed = false;
 
   auto new_map_name = request->mapname();
-  auto current_map_name = _carla_server.call_get_map_info().Get().name;
+  auto map_info_response = _carla_server.call_get_map_info();
+  // No episode loaded yet (e.g. first-ever LoadMap request to a freshly started server) - treat
+  // as "no map currently loaded" rather than failing the request, so the requested map still loads.
+  std::string current_map_name;
+  if (map_info_response.HasError()) {
+    log_info("ROS2:LoadMapService(", request->mapname(),
+      "): no map currently loaded (", map_info_response.GetError().What(), ")");
+  } else {
+    current_map_name = map_info_response.Get().name;
+  }
   std::string map_name_prefix = "Carla/Maps/";
   std::string map_name_without_prefix = request->mapname();
   if (map_name_without_prefix.find(map_name_prefix) == 0) {

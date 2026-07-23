@@ -34,7 +34,13 @@ carla_msgs::srv::GetBlueprints_Response GetBlueprintsService::GetBlueprints(
   if (filter == "") {
     filter = "*";
   }
-  auto blueprints = carla::actors::BlueprintLibrary(_carla_server.call_get_actor_definitions().Get()).Filter(filter);
+  auto actor_definitions_response = _carla_server.call_get_actor_definitions();
+  if (actor_definitions_response.HasError()) {
+    log_error("ROS2:GetBlueprintsService failed to retrieve actor definitions: ",
+              actor_definitions_response.GetError().What());
+    return response;
+  }
+  auto blueprints = carla::actors::BlueprintLibrary(actor_definitions_response.Get()).Filter(filter);
   response.blueprints().reserve(blueprints->size());
   for (auto const &blueprint : *blueprints) {
     carla_msgs::msg::CarlaActorBlueprint ros_blueprint;
