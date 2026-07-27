@@ -20,10 +20,26 @@ template <typename MESSAGE_TYPE, typename MESSAGE_PUB_TYPE>
 class DdsSubscriberImpl;
 
 /**
+ * Non-template interface shared by every SubscriberBase<MESSAGE_TYPE> instantiation - neither
+ * Init() nor ProcessMessages() actually depends on MESSAGE_TYPE at this level. Lets a caller that
+ * owns a heterogeneous set of subscribers (e.g. one vehicle's several control/set_* subscribers,
+ * each a different message type) keep them in a single homogeneous list and Init()/ProcessMessages()
+ * all of them generically, instead of one manually-named member per concrete subscriber type -
+ * the latter is easy to silently forget to wire into a manual per-member dispatch list (as
+ * happened for several vehicle subscribers before this was introduced).
+ */
+class ISubscriber {
+public:
+  virtual ~ISubscriber() = default;
+  virtual bool Init(std::shared_ptr<DdsDomainParticipantImpl> domain_participant) = 0;
+  virtual void ProcessMessages() = 0;
+};
+
+/**
  * Subscriber Base class
  */
 template <typename MESSAGE_TYPE>
-class SubscriberBase {
+class SubscriberBase : public ISubscriber {
 public:
   SubscriberBase(ROS2NameRecord &parent) : _parent(parent) {
     log_debug("SubscriberBase created for topic {}", parent.get_topic_name());

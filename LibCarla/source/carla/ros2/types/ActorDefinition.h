@@ -4,7 +4,9 @@
 
 #pragma once
 
+#include "carla/geom/AngularVelocity.h"
 #include "carla/geom/BoundingBox.h"
+#include "carla/geom/Vector3D.h"
 #include "carla/rpc/EnvironmentObject.h"
 #include "carla/ros2/types/ActorNameDefinition.h"
 #include "carla/ros2/types/Polygon.h"
@@ -15,6 +17,24 @@ namespace ros2 {
 namespace types {
 
 using ActorSetTransformCallback = std::function<void(carla::ros2::types::Transform &)>;
+using ActorSetSimulatePhysicsCallback = std::function<void(bool)>;
+// carla::geom::Vector3D here is already in CARLA/UE4 (left-handed) coordinates and units (m/s) -
+// see ActorSetTargetVelocitySubscriber for the ROS(m/s, right-handed) -> CARLA conversion.
+using ActorSetTargetVelocityCallback = std::function<void(carla::geom::Vector3D const &)>;
+// carla::geom::AngularVelocity here is already in CARLA/UE4 (left-handed) coordinates and units
+// (deg/s, see carla::geom::AngularVelocity's own doc) - see
+// ActorSetTargetAngularVelocitySubscriber for the ROS(rad/s, right-handed) -> CARLA conversion.
+using ActorSetTargetAngularVelocityCallback = std::function<void(carla::geom::AngularVelocity const &)>;
+// no payload - restore_physx_physics is a pure trigger (see FVehicleActor::RestorePhysXPhysics()),
+// same as its existing non-ROS2 RPC counterpart.
+using ActorRestorePhysXPhysicsCallback = std::function<void()>;
+// same payload/signature as ActorSetTransformCallback - "safe teleport" bundles the full sequence
+// (disable physics, zero linear/angular velocity, restore PhysX wheel/suspension state, set the
+// transform, re-enable physics) into one atomic call (see ActorTeleportSubscriber), instead of a
+// caller having to sequence 5+ separate topic publishes with no guarantee they land before the
+// same tick or in the right order. See the callback's own comment in ActorDispatcher.cpp for why
+// re-enabling physics immediately (no held tick in between) is safe here, empirically verified.
+using ActorTeleportCallback = std::function<void(carla::ros2::types::Transform &)>;
 
 struct ActorDefinition : public ActorNameDefinition {
   ActorDefinition(ActorNameDefinition const &actor_name_definition, carla::geom::BoundingBox const &bounding_box_)

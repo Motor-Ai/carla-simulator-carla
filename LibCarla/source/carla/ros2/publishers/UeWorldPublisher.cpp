@@ -124,9 +124,9 @@ void UeWorldPublisher::ProcessMessages() {
   _sync_subscriber->ProcessMessages();
   _weather_control_subscriber->ProcessMessages();
   for (auto& vehicle : _vehicles) {
-    vehicle.second._vehicle_controller->ProcessMessages();
-    vehicle.second._vehicle_ackermann_controller->ProcessMessages();
-    vehicle.second._actor_set_transform_subscriber->ProcessMessages();
+    for (auto &subscriber : vehicle.second._subscribers) {
+      subscriber->ProcessMessages();
+    }
   }
   for (auto& walker : _walkers) {
     walker.second._walker_controller->ProcessMessages();
@@ -444,7 +444,12 @@ void UeWorldPublisher::AddVehicleUe(
     std::shared_ptr<carla::ros2::types::VehicleActorDefinition> vehicle_actor_definition,
     carla::ros2::types::VehicleControlCallback vehicle_control_callback,
     carla::ros2::types::VehicleAckermannControlCallback vehicle_ackermann_control_callback,
-    carla::ros2::types::ActorSetTransformCallback vehicle_set_transform_callback) {
+    carla::ros2::types::ActorSetTransformCallback vehicle_set_transform_callback,
+    carla::ros2::types::ActorSetSimulatePhysicsCallback vehicle_set_simulate_physics_callback,
+    carla::ros2::types::ActorSetTargetVelocityCallback vehicle_set_target_velocity_callback,
+    carla::ros2::types::ActorSetTargetAngularVelocityCallback vehicle_set_target_angular_velocity_callback,
+    carla::ros2::types::ActorRestorePhysXPhysicsCallback vehicle_restore_physx_physics_callback,
+    carla::ros2::types::ActorTeleportCallback vehicle_teleport_callback) {
   if (!_initialized) {
     return;
   }
@@ -459,12 +464,16 @@ void UeWorldPublisher::AddVehicleUe(
   auto vehicle_publisher =
       std::make_shared<VehiclePublisher>(vehicle_actor_definition, _transform_publisher, _objects_publisher, _objects_with_covariance_publisher, _carla_server);
   UeVehicle ue_vehicle(vehicle_publisher);
-  ue_vehicle._vehicle_controller =
-      std::make_shared<VehicleControlSubscriber>(*vehicle_publisher, std::move(vehicle_control_callback));
-  ue_vehicle._vehicle_ackermann_controller =
-      std::make_shared<AckermannControlSubscriber>(*vehicle_publisher, std::move(vehicle_ackermann_control_callback));
-  ue_vehicle._actor_set_transform_subscriber =
-      std::make_shared<ActorSetTransformSubscriber>(*vehicle_publisher, std::move(vehicle_set_transform_callback));
+  ue_vehicle._subscribers = {
+      std::make_shared<VehicleControlSubscriber>(*vehicle_publisher, std::move(vehicle_control_callback)),
+      std::make_shared<AckermannControlSubscriber>(*vehicle_publisher, std::move(vehicle_ackermann_control_callback)),
+      std::make_shared<ActorSetTransformSubscriber>(*vehicle_publisher, std::move(vehicle_set_transform_callback)),
+      std::make_shared<ActorSetSimulatePhysicsSubscriber>(*vehicle_publisher, std::move(vehicle_set_simulate_physics_callback)),
+      std::make_shared<ActorSetTargetVelocitySubscriber>(*vehicle_publisher, std::move(vehicle_set_target_velocity_callback)),
+      std::make_shared<ActorSetTargetAngularVelocitySubscriber>(*vehicle_publisher, std::move(vehicle_set_target_angular_velocity_callback)),
+      std::make_shared<ActorRestorePhysXPhysicsSubscriber>(*vehicle_publisher, std::move(vehicle_restore_physx_physics_callback)),
+      std::make_shared<ActorTeleportSubscriber>(*vehicle_publisher, std::move(vehicle_teleport_callback)),
+  };
 
   auto vehicle_result = _vehicles.insert({vehicle_actor_definition->id, ue_vehicle});
   if (!vehicle_result.second) {
@@ -477,9 +486,9 @@ void UeWorldPublisher::UeVehicle::Init(std::shared_ptr<DdsDomainParticipantImpl>
 {
   if ( _vehicle_publisher->is_enabled_for_ros() ) {
     _vehicle_publisher->Init(domain_participant);
-    _vehicle_controller->Init(domain_participant);
-    _vehicle_ackermann_controller->Init(domain_participant);
-    _actor_set_transform_subscriber->Init(domain_participant);
+    for (auto &subscriber : _subscribers) {
+      subscriber->Init(domain_participant);
+    }
   }
 }
 

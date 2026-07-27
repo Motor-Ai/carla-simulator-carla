@@ -61,7 +61,12 @@ public:
   void AddVehicleUe(std::shared_ptr<carla::ros2::types::VehicleActorDefinition> vehicle_actor_definition,
                     carla::ros2::types::VehicleControlCallback vehicle_control_callback,
                     carla::ros2::types::VehicleAckermannControlCallback vehicle_ackermann_control_callback,
-                    carla::ros2::types::ActorSetTransformCallback vehicle_set_transform_callback);
+                    carla::ros2::types::ActorSetTransformCallback vehicle_set_transform_callback,
+                    carla::ros2::types::ActorSetSimulatePhysicsCallback vehicle_set_simulate_physics_callback = nullptr,
+                    carla::ros2::types::ActorSetTargetVelocityCallback vehicle_set_target_velocity_callback = nullptr,
+                    carla::ros2::types::ActorSetTargetAngularVelocityCallback vehicle_set_target_angular_velocity_callback = nullptr,
+                    carla::ros2::types::ActorRestorePhysXPhysicsCallback vehicle_restore_physx_physics_callback = nullptr,
+                    carla::ros2::types::ActorTeleportCallback vehicle_teleport_callback = nullptr);
   void AddWalkerUe(std::shared_ptr<carla::ros2::types::WalkerActorDefinition> walker_actor_definition,
                    carla::ros2::types::WalkerControlCallback walker_control_callback);
   void AddTrafficLightUe(

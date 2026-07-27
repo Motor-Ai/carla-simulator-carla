@@ -147,10 +147,18 @@ void ROS2::Disable() {
 void ROS2::AddVehicleUe(std::shared_ptr<carla::ros2::types::VehicleActorDefinition> vehicle_actor_definition,
                         carla::ros2::types::VehicleControlCallback vehicle_control_callback,
                         carla::ros2::types::VehicleAckermannControlCallback vehicle_ackermann_control_callback,
-                        carla::ros2::types::ActorSetTransformCallback vehicle_set_transform_callback) {
+                        carla::ros2::types::ActorSetTransformCallback vehicle_set_transform_callback,
+                        carla::ros2::types::ActorSetSimulatePhysicsCallback vehicle_set_simulate_physics_callback,
+                        carla::ros2::types::ActorSetTargetVelocityCallback vehicle_set_target_velocity_callback,
+                        carla::ros2::types::ActorSetTargetAngularVelocityCallback vehicle_set_target_angular_velocity_callback,
+                        carla::ros2::types::ActorRestorePhysXPhysicsCallback vehicle_restore_physx_physics_callback,
+                        carla::ros2::types::ActorTeleportCallback vehicle_teleport_callback) {
   log_debug("ROS2::AddVehicleUe(", std::to_string(*vehicle_actor_definition), ")");
   _world_publisher->AddVehicleUe(vehicle_actor_definition, vehicle_control_callback,
-                                 vehicle_ackermann_control_callback, vehicle_set_transform_callback);
+                                 vehicle_ackermann_control_callback, vehicle_set_transform_callback,
+                                 vehicle_set_simulate_physics_callback, vehicle_set_target_velocity_callback,
+                                 vehicle_set_target_angular_velocity_callback, vehicle_restore_physx_physics_callback,
+                                 vehicle_teleport_callback);
 }
 
 void ROS2::AddWalkerUe(std::shared_ptr<carla::ros2::types::WalkerActorDefinition> walker_actor_definition,

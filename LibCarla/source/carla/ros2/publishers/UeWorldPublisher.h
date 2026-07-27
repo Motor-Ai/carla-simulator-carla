@@ -20,7 +20,12 @@
 #include "carla/ros2/publishers/WalkerPublisher.h"
 #include "carla/ros2/publishers/WeatherPublisher.h"
 #include "carla/ros2/subscribers/AckermannControlSubscriber.h"
+#include "carla/ros2/subscribers/ActorRestorePhysXPhysicsSubscriber.h"
+#include "carla/ros2/subscribers/ActorSetSimulatePhysicsSubscriber.h"
+#include "carla/ros2/subscribers/ActorSetTargetAngularVelocitySubscriber.h"
+#include "carla/ros2/subscribers/ActorSetTargetVelocitySubscriber.h"
 #include "carla/ros2/subscribers/ActorSetTransformSubscriber.h"
+#include "carla/ros2/subscribers/ActorTeleportSubscriber.h"
 #include "carla/ros2/subscribers/CarlaControlSubscriber.h"
 #include "carla/ros2/subscribers/CarlaSynchronizationWindowSubscriber.h"
 #include "carla/ros2/subscribers/VehicleControlSubscriber.h"
@@ -103,7 +108,12 @@ public:
   void AddVehicleUe(std::shared_ptr<carla::ros2::types::VehicleActorDefinition> vehicle_actor_definition,
                     carla::ros2::types::VehicleControlCallback vehicle_control_callback,
                     carla::ros2::types::VehicleAckermannControlCallback vehicle_ackermann_control_callback,
-                    carla::ros2::types::ActorSetTransformCallback vehicle_set_transform_callback);
+                    carla::ros2::types::ActorSetTransformCallback vehicle_set_transform_callback,
+                    carla::ros2::types::ActorSetSimulatePhysicsCallback vehicle_set_simulate_physics_callback = nullptr,
+                    carla::ros2::types::ActorSetTargetVelocityCallback vehicle_set_target_velocity_callback = nullptr,
+                    carla::ros2::types::ActorSetTargetAngularVelocityCallback vehicle_set_target_angular_velocity_callback = nullptr,
+                    carla::ros2::types::ActorRestorePhysXPhysicsCallback vehicle_restore_physx_physics_callback = nullptr,
+                    carla::ros2::types::ActorTeleportCallback vehicle_teleport_callback = nullptr);
   void AddWalkerUe(std::shared_ptr<carla::ros2::types::WalkerActorDefinition> walker_actor_definition,
                    carla::ros2::types::WalkerControlCallback walker_control_callback);
   void AddTrafficLightUe(
@@ -178,9 +188,12 @@ private:
     explicit UeVehicle(std::shared_ptr<VehiclePublisher> carla_vehicle_publisher)
       : _vehicle_publisher(carla_vehicle_publisher) {}
     std::shared_ptr<VehiclePublisher> _vehicle_publisher;
-    std::shared_ptr<VehicleControlSubscriber> _vehicle_controller;
-    std::shared_ptr<AckermannControlSubscriber> _vehicle_ackermann_controller;
-    std::shared_ptr<ActorSetTransformSubscriber> _actor_set_transform_subscriber;
+    // every control/set_*/restore_*/teleport subscriber for this vehicle, regardless of message
+    // type - held type-erased via ISubscriber so Init()/ProcessMessages() below iterate a single
+    // list instead of one manually-named member + one manually-written dispatch line each (the
+    // latter is exactly what silently left several of these never actually polled - see
+    // ISubscriber's own doc comment in SubscriberBase.h).
+    std::vector<std::shared_ptr<ISubscriber>> _subscribers;
 
     void Init(std::shared_ptr<DdsDomainParticipantImpl> domain_participant);
   };

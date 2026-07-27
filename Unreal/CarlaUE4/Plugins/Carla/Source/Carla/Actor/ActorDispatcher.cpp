@@ -316,7 +316,60 @@ void RegisterActorROS2(std::shared_ptr<carla::ros2::ROS2> ROS2, FCarlaActor* Car
       CarlaActor->SetActorGlobalTransform(Transform.GetTransform(), ETeleportType::TeleportPhysics);
     };
 
-    ROS2->AddVehicleUe(VehicleActorDefinition, VehicleControlCallback, VehicleAckermannControlCallback, VehicleSetTransformCallback);
+    carla::ros2::types::ActorSetSimulatePhysicsCallback VehicleSetSimulatePhysicsCallback = [CarlaActor](bool bEnabled) -> void {
+      CarlaActor->SetActorSimulatePhysics(bEnabled);
+    };
+
+    // needed alongside VehicleSetTransformCallback's TeleportPhysics above: that only snaps the
+    // pose, it doesn't reset the rigid body's existing linear/angular velocity, so an actor
+    // teleported while still moving/turning carries that motion straight through the teleport.
+    carla::ros2::types::ActorSetTargetVelocityCallback VehicleSetTargetVelocityCallback
+        = [CarlaActor](carla::geom::Vector3D const &Velocity) -> void {
+      CarlaActor->SetActorTargetVelocity(Velocity.ToCentimeters().ToFVector());
+    };
+
+    carla::ros2::types::ActorSetTargetAngularVelocityCallback VehicleSetTargetAngularVelocityCallback
+        = [CarlaActor](carla::geom::AngularVelocity const &AngularVelocity) -> void {
+      CarlaActor->SetActorTargetAngularVelocity(AngularVelocity.ToFVector());
+    };
+
+    // resets the wheeled-vehicle movement component's own physics state (wheel spin, suspension
+    // compression) - independent of, and complementary to, the rigid-body velocity reset above.
+    carla::ros2::types::ActorRestorePhysXPhysicsCallback VehicleRestorePhysXPhysicsCallback = [CarlaActor]() -> void {
+      CarlaActor->RestorePhysXPhysics();
+    };
+
+    // bundles the full "safe teleport" sequence - disable physics, zero linear/angular velocity,
+    // restore PhysX wheel/suspension state, set the transform, re-enable physics - into one atomic
+    // call, so a caller doesn't have to sequence 5+ separate topic publishes with no guarantee
+    // they land before the same tick. Every step here is fully synchronous
+    // (ACarlaWheeledVehicle::SetSimulatePhysics's Movement->DestroyPhysicsState()/
+    // RecreatePhysicsState() both run under an explicit, immediately-unlocked PxScene write-lock),
+    // so there's no next-tick dependency anywhere in this sequence. Originally the re-enable step
+    // was deliberately held back a tick, matching perception_traffic_manager/scene_manager.py's
+    // teleport_ego() (which ticks once between set_transform and set_simulate_physics(true)), out
+    // of concern that re-enabling physics before the collision/broadphase system registered the
+    // actor's new position could reproduce the violent-depenetration ejection seen for real on
+    // Schwarzer_Berg. Empirically that hold turned out to be unnecessary: manually tested with no
+    // delay at all between the two calls, including while actively swerving at speed, and it
+    // settled cleanly every time - so it's folded in here too.
+    carla::ros2::types::ActorTeleportCallback VehicleTeleportCallback = [CarlaActor](carla::ros2::types::Transform &Transform) -> void {
+      FTransform const DebugTransform = Transform.GetTransform();
+      UE_LOG(LogCarla, Warning, TEXT("VehicleTeleportCallback: applying transform loc=%s rot=%s"),
+          *DebugTransform.GetLocation().ToString(), *DebugTransform.GetRotation().Rotator().ToString());
+      CarlaActor->SetActorSimulatePhysics(false);
+      CarlaActor->SetActorTargetVelocity(FVector::ZeroVector);
+      CarlaActor->SetActorTargetAngularVelocity(FVector::ZeroVector);
+      CarlaActor->RestorePhysXPhysics();
+      // TeleportPhysics is required here - without it, the physics-simulated rigid body keeps its
+      // prior pose and the vehicle movement component fights to catch up instead of snapping to it.
+      CarlaActor->SetActorGlobalTransform(Transform.GetTransform(), ETeleportType::TeleportPhysics);
+      CarlaActor->SetActorSimulatePhysics(true);
+    };
+
+    ROS2->AddVehicleUe(VehicleActorDefinition, VehicleControlCallback, VehicleAckermannControlCallback,
+        VehicleSetTransformCallback, VehicleSetSimulatePhysicsCallback, VehicleSetTargetVelocityCallback,
+        VehicleSetTargetAngularVelocityCallback, VehicleRestorePhysXPhysicsCallback, VehicleTeleportCallback);
   }
   else if ( Walker != nullptr ) {
     ActorNameDefinition.city_object_label = carla::rpc::CityObjectLabel::Pedestrians;
