@@ -468,11 +468,14 @@ void UeWorldPublisher::AddVehicleUe(
       std::make_shared<VehicleControlSubscriber>(*vehicle_publisher, std::move(vehicle_control_callback)),
       std::make_shared<AckermannControlSubscriber>(*vehicle_publisher, std::move(vehicle_ackermann_control_callback)),
       std::make_shared<ActorSetTransformSubscriber>(*vehicle_publisher, std::move(vehicle_set_transform_callback)),
-      std::make_shared<ActorSetSimulatePhysicsSubscriber>(*vehicle_publisher, std::move(vehicle_set_simulate_physics_callback)),
+      // not moved here - ActorTeleportSubscriber below also needs a copy, to re-enable physics
+      // itself one tick after applying a teleport (see that subscriber's own doc comment).
+      std::make_shared<ActorSetSimulatePhysicsSubscriber>(*vehicle_publisher, vehicle_set_simulate_physics_callback),
       std::make_shared<ActorSetTargetVelocitySubscriber>(*vehicle_publisher, std::move(vehicle_set_target_velocity_callback)),
       std::make_shared<ActorSetTargetAngularVelocitySubscriber>(*vehicle_publisher, std::move(vehicle_set_target_angular_velocity_callback)),
       std::make_shared<ActorRestorePhysXPhysicsSubscriber>(*vehicle_publisher, std::move(vehicle_restore_physx_physics_callback)),
-      std::make_shared<ActorTeleportSubscriber>(*vehicle_publisher, std::move(vehicle_teleport_callback)),
+      std::make_shared<ActorTeleportSubscriber>(*vehicle_publisher, std::move(vehicle_teleport_callback),
+                                                std::move(vehicle_set_simulate_physics_callback)),
   };
 
   auto vehicle_result = _vehicles.insert({vehicle_actor_definition->id, ue_vehicle});

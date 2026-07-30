@@ -339,24 +339,15 @@ void RegisterActorROS2(std::shared_ptr<carla::ros2::ROS2> ROS2, FCarlaActor* Car
       CarlaActor->RestorePhysXPhysics();
     };
 
-    // bundles the full "safe teleport" sequence - disable physics, zero linear/angular velocity,
-    // restore PhysX wheel/suspension state, set the transform, re-enable physics - into one atomic
-    // call, so a caller doesn't have to sequence 5+ separate topic publishes with no guarantee
-    // they land before the same tick. Every step here is fully synchronous
-    // (ACarlaWheeledVehicle::SetSimulatePhysics's Movement->DestroyPhysicsState()/
-    // RecreatePhysicsState() both run under an explicit, immediately-unlocked PxScene write-lock),
-    // so there's no next-tick dependency anywhere in this sequence. Originally the re-enable step
-    // was deliberately held back a tick, matching perception_traffic_manager/scene_manager.py's
-    // teleport_ego() (which ticks once between set_transform and set_simulate_physics(true)), out
-    // of concern that re-enabling physics before the collision/broadphase system registered the
-    // actor's new position could reproduce the violent-depenetration ejection seen for real on
-    // Schwarzer_Berg. Empirically that hold turned out to be unnecessary: manually tested with no
-    // delay at all between the two calls, including while actively swerving at speed, and it
-    // settled cleanly every time - so it's folded in here too.
+    // bundles disabling physics, zeroing linear/angular velocity, restoring PhysX wheel/suspension
+    // state, and setting the transform into one atomic call, so a caller doesn't have to sequence
+    // 4 separate topic publishes with no guarantee they land before the same tick or in the right
+    // order. Deliberately does NOT also re-enable physics here: re-enabling before the collision/
+    // broadphase system has registered the actor at its new position can corrupt the vehicle's
+    // physics state, so it must happen at least one tick after the transform is applied, never in
+    // the same call. See ActorTeleportSubscriber for how physics still gets re-enabled without the
+    // caller having to manage that timing itself.
     carla::ros2::types::ActorTeleportCallback VehicleTeleportCallback = [CarlaActor](carla::ros2::types::Transform &Transform) -> void {
-      FTransform const DebugTransform = Transform.GetTransform();
-      UE_LOG(LogCarla, Warning, TEXT("VehicleTeleportCallback: applying transform loc=%s rot=%s"),
-          *DebugTransform.GetLocation().ToString(), *DebugTransform.GetRotation().Rotator().ToString());
       CarlaActor->SetActorSimulatePhysics(false);
       CarlaActor->SetActorTargetVelocity(FVector::ZeroVector);
       CarlaActor->SetActorTargetAngularVelocity(FVector::ZeroVector);
@@ -364,7 +355,6 @@ void RegisterActorROS2(std::shared_ptr<carla::ros2::ROS2> ROS2, FCarlaActor* Car
       // TeleportPhysics is required here - without it, the physics-simulated rigid body keeps its
       // prior pose and the vehicle movement component fights to catch up instead of snapping to it.
       CarlaActor->SetActorGlobalTransform(Transform.GetTransform(), ETeleportType::TeleportPhysics);
-      CarlaActor->SetActorSimulatePhysics(true);
     };
 
     ROS2->AddVehicleUe(VehicleActorDefinition, VehicleControlCallback, VehicleAckermannControlCallback,

@@ -28,12 +28,11 @@ using ActorSetTargetAngularVelocityCallback = std::function<void(carla::geom::An
 // no payload - restore_physx_physics is a pure trigger (see FVehicleActor::RestorePhysXPhysics()),
 // same as its existing non-ROS2 RPC counterpart.
 using ActorRestorePhysXPhysicsCallback = std::function<void()>;
-// same payload/signature as ActorSetTransformCallback - "safe teleport" bundles the full sequence
-// (disable physics, zero linear/angular velocity, restore PhysX wheel/suspension state, set the
-// transform, re-enable physics) into one atomic call (see ActorTeleportSubscriber), instead of a
-// caller having to sequence 5+ separate topic publishes with no guarantee they land before the
-// same tick or in the right order. See the callback's own comment in ActorDispatcher.cpp for why
-// re-enabling physics immediately (no held tick in between) is safe here, empirically verified.
+// same payload/signature as ActorSetTransformCallback - "safe teleport" bundles disabling
+// physics, zeroing linear/angular velocity, restoring PhysX wheel/suspension state, and setting
+// the transform into one atomic call (see ActorTeleportSubscriber), instead of a caller having to
+// sequence 4 separate topic publishes with no guarantee they land before the same tick or in the
+// right order.
 using ActorTeleportCallback = std::function<void(carla::ros2::types::Transform &)>;
 
 struct ActorDefinition : public ActorNameDefinition {
