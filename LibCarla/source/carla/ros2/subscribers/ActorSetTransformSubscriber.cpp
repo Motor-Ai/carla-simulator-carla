@@ -16,7 +16,11 @@ ActorSetTransformSubscriber::ActorSetTransformSubscriber(ROS2NameRecord& parent,
     _actor_set_transform_callback(actor_set_transform_callback) {}
 
 bool ActorSetTransformSubscriber::Init(std::shared_ptr<DdsDomainParticipantImpl> domain_participant) {
-  return _impl->Init(domain_participant, get_topic_name("set_transform"), get_topic_qos());
+  // reliable, not the default best-effort: a one-shot critical actor command (like
+  // ActorTeleportSubscriber, which overrides this for the same reason) - a single dropped message
+  // under load leaves the actor at the wrong transform with no follow-up message to correct it,
+  // unlike a lost frame of a continuously-republished control stream.
+  return _impl->Init(domain_participant, get_topic_name("set_transform"), get_topic_qos().reliable());
 }
 
 void ActorSetTransformSubscriber::ProcessMessages() {

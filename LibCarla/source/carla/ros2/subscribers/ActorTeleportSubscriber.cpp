@@ -41,7 +41,11 @@ ActorTeleportSubscriber::~ActorTeleportSubscriber() {
 }
 
 bool ActorTeleportSubscriber::Init(std::shared_ptr<DdsDomainParticipantImpl> domain_participant) {
-  return _impl->Init(domain_participant, get_topic_name("actor_teleport"), get_topic_qos());
+  // reliable, not the default best-effort: a teleport is a one-shot critical command (like
+  // CarlaControlSubscriber/CarlaSynchronizationWindowSubscriber, which override this for the same
+  // reason) - a single dropped message under load means the leg never starts correctly at all,
+  // unlike a lost frame of a high-rate sensor stream.
+  return _impl->Init(domain_participant, get_topic_name("actor_teleport"), get_topic_qos().reliable());
 }
 
 void ActorTeleportSubscriber::FireDeferredReenablePhysics() {

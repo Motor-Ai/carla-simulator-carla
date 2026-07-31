@@ -17,7 +17,11 @@ ActorSetTargetAngularVelocitySubscriber::ActorSetTargetAngularVelocitySubscriber
     _actor_set_target_angular_velocity_callback(actor_set_target_angular_velocity_callback) {}
 
 bool ActorSetTargetAngularVelocitySubscriber::Init(std::shared_ptr<DdsDomainParticipantImpl> domain_participant) {
-  return _impl->Init(domain_participant, get_topic_name("set_target_angular_velocity"), get_topic_qos());
+  // reliable, not the default best-effort: a one-shot critical actor command (like
+  // ActorTeleportSubscriber, which overrides this for the same reason) - a single dropped message
+  // under load leaves angular velocity in the wrong state with no follow-up message to correct it,
+  // unlike a lost frame of a continuously-republished control stream.
+  return _impl->Init(domain_participant, get_topic_name("set_target_angular_velocity"), get_topic_qos().reliable());
 }
 
 void ActorSetTargetAngularVelocitySubscriber::ProcessMessages() {

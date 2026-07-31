@@ -16,7 +16,11 @@ ActorSetSimulatePhysicsSubscriber::ActorSetSimulatePhysicsSubscriber(ROS2NameRec
     _actor_set_simulate_physics_callback(actor_set_simulate_physics_callback) {}
 
 bool ActorSetSimulatePhysicsSubscriber::Init(std::shared_ptr<DdsDomainParticipantImpl> domain_participant) {
-  return _impl->Init(domain_participant, get_topic_name("set_simulate_physics"), get_topic_qos());
+  // reliable, not the default best-effort: a one-shot critical actor command (like
+  // ActorTeleportSubscriber, which overrides this for the same reason) - a single dropped message
+  // under load leaves physics in the wrong state with no follow-up message to correct it, unlike a
+  // lost frame of a continuously-republished control stream.
+  return _impl->Init(domain_participant, get_topic_name("set_simulate_physics"), get_topic_qos().reliable());
 }
 
 void ActorSetSimulatePhysicsSubscriber::ProcessMessages() {
