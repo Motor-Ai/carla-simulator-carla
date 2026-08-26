@@ -212,8 +212,10 @@ bool ATrafficLightBase::GetTimeIsFrozen() const
   if(TrafficLightComponent)
   {
     auto* Group = TrafficLightComponent->GetGroup();
-    check(Group);
-    return Group->IsFrozen();
+    if (Group)
+    {
+      return Group->IsFrozen();
+    }
   }
   return false;
 }

@@ -51,8 +51,7 @@ namespace client {
   }
 
   void TrafficLight::Freeze(bool freeze) {
-    //GetEpisode().Lock()->FreezeTrafficLight(*this, freeze);
-    GetEpisode().Lock()->FreezeAllTrafficLights(freeze);
+    GetEpisode().Lock()->FreezeTrafficLight(*this, freeze);
   }
 
   bool TrafficLight::IsFrozen() const {

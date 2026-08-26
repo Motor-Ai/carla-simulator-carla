@@ -23,7 +23,6 @@ class CARLA_API ATrafficLightBase : public ATrafficSignBase
   GENERATED_BODY()
 
 public:
-
   ATrafficLightBase(const FObjectInitializer &ObjectInitializer);
 
   UFUNCTION(Category = "Traffic Light", BlueprintCallable)
@@ -91,12 +90,10 @@ public:
   void AddTimeToRecorder();
 
 protected:
-
   UFUNCTION(Category = "Traffic Light", BlueprintImplementableEvent)
   void OnTrafficLightStateChanged(ETrafficLightState TrafficLightState);
 
 private:
-
   UPROPERTY(Category = "Traffic Light", VisibleAnywhere)
   TArray<AWheeledVehicleAIController *> Vehicles;
 
@@ -106,6 +103,6 @@ private:
   UPROPERTY(Category = "Traffic Light", VisibleAnywhere)
   TArray<ATrafficLightBase *> GroupTrafficLights;
 
-  UPROPERTY(Category = "Traffic Light", EditAnywhere)
-  UTrafficLightComponent * TrafficLightComponent = nullptr;
+  UPROPERTY(Category = "Traffic Light", EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+  UTrafficLightComponent *TrafficLightComponent = nullptr;
 };

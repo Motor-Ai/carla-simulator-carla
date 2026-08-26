@@ -35,6 +35,10 @@ void ATrafficLightGroup::ResetGroup()
     Controller->ResetState();
   }
   CurrentController = 0;
+  if (Controllers.Num() == 0)
+  {
+    return;
+  }
   UTrafficLightController* controller = Controllers[CurrentController];
   controller->StartCycle();
 }
@@ -64,6 +68,11 @@ void ATrafficLightGroup::Tick(float DeltaTime)
     return;
   }
 
+  if (Controllers.Num() == 0)
+  {
+    return;
+  }
+
   UTrafficLightController* controller = Controllers[CurrentController];
   if (controller->AdvanceTimeAndCycleFinished(DeltaTime))
   {
@@ -87,4 +96,13 @@ void ATrafficLightGroup::AddController(UTrafficLightController* Controller)
 {
   Controllers.Add(Controller);
   Controller->SetGroup(this);
+}
+
+void ATrafficLightGroup::RemoveController(UTrafficLightController* Controller)
+{
+  Controllers.Remove(Controller);
+  if (CurrentController >= Controllers.Num())
+  {
+    CurrentController = 0;
+  }
 }

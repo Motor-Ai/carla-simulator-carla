@@ -46,6 +46,9 @@ public:
   UFUNCTION(Category = "Traffic Group", BlueprintCallable)
   void AddController(UTrafficLightController* Controller);
 
+  UFUNCTION(Category = "Traffic Group", BlueprintCallable)
+  void RemoveController(UTrafficLightController* Controller);
+
 protected:
   // Called every frame
   virtual void Tick(float DeltaTime) override;

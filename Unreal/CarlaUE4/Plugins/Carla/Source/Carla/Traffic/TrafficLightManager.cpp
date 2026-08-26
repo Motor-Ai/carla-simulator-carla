@@ -145,10 +145,19 @@ void ATrafficLightManager::RegisterLightComponentFromOpenDRIVE(UTrafficLightComp
   // Cast to std::string
   carla::road::SignId SignId(TCHAR_TO_UTF8(*(TrafficLightComponent->GetSignId())));
 
+  const auto &Signals = GetMap()->GetSignals();
+  if (Signals.count(SignId) == 0)
+  {
+    UE_LOG(LogCarla, Warning,
+        TEXT("RegisterLightComponentFromOpenDRIVE: no OpenDRIVE signal found for SignId '%s', skipping registration."),
+        *(TrafficLightComponent->GetSignId()));
+    return;
+  }
+
   ATrafficLightGroup* TrafficLightGroup;
   UTrafficLightController* TrafficLightController;
 
-  const auto &Signal = GetMap()->GetSignals().at(SignId);
+  const auto &Signal = Signals.at(SignId);
   if(Signal->GetControllers().size())
   {
     // Only one controller per signal
