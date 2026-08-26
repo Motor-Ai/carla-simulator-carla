@@ -116,11 +116,25 @@ static auto FWorldObserver_GetActorState(const FCarlaActor &View, const FActorRe
 
         if (!Controller)
         {
-          UE_LOG(LogCarla, Error, TEXT("TrafficLightComponent doesn't have any Controller assigned"));
+          static TSet<FString> AlreadyWarnedMissingController;
+          const FString SignId = TrafficLightComponent->GetSignId();
+          if (!AlreadyWarnedMissingController.Contains(SignId))
+          {
+            AlreadyWarnedMissingController.Add(SignId);
+            UE_LOG(LogCarla, Error, TEXT("TrafficLightComponent doesn't have any Controller assigned. SignId=%s Actor=%s"),
+                *SignId, *TrafficLight->GetName());
+          }
         }
         else if (!Group)
         {
-          UE_LOG(LogCarla, Error, TEXT("TrafficLightComponent doesn't have any Group assigned"));
+          static TSet<FString> AlreadyWarnedMissingGroup;
+          const FString SignId = TrafficLightComponent->GetSignId();
+          if (!AlreadyWarnedMissingGroup.Contains(SignId))
+          {
+            AlreadyWarnedMissingGroup.Add(SignId);
+            UE_LOG(LogCarla, Error, TEXT("TrafficLightComponent doesn't have any Group assigned. SignId=%s Actor=%s"),
+                *SignId, *TrafficLight->GetName());
+          }
         }
         else
         {
