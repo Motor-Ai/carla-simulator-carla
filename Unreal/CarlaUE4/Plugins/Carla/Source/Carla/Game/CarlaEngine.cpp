@@ -338,8 +338,23 @@ void FCarlaEngine::OnPreTick(UWorld *, ELevelTick TickType, float DeltaSeconds)
       }
       while (Server.IsSynchronousModeActive() && !Server.TickCueReceived());
 
-      if ( (CurrentEpisode && !Server.IsSynchronousModeActive() && SecondaryServer->HasClientsConnected())
-          || ( Server.IsSynchronousModeActive() && (!CurrentSettings.FixedDeltaSeconds || !CurrentSettings.bSynchronousMode) ) )
+      // Two distinct situations funnel through this same self-healing block, and only the first
+      // one actually owns the engine's own default synchronization identity (SynchronizationClientId()
+      // + TickParticipantId()'s session-less fallback) going forward:
+      //  - secondary server case: nobody else is synchronizing yet, and *we* (the engine, via
+      //    FCarlaServer::Tick() from the SEND_FRAME command executor) are about to become the
+      //    real, ticking owner of that identity - EnableSynchronousMode() must stick.
+      //  - bookkeeping-catch-up case: sync mode is already active via some real, independent
+      //    participant (e.g. a ROS2-native client) - CurrentSettings merely needs to catch up
+      //    with that fact. Calling EnableSynchronousMode() here still cannot start blocking the
+      //    world thanks to the Confirmed-gated barrier in ServerSynchronization.h, but nothing
+      //    will ever tick this identity on its own behalf either, so it would sit forever as an
+      //    inert-but-misleading "enabled" entry (visible on /carla/status's synchronization
+      //    window). Release it again right after so the engine's own identity accurately reflects
+      //    that it isn't a real independent participant in this case.
+      bool const bIsSecondaryServerCase = CurrentEpisode && !Server.IsSynchronousModeActive() && SecondaryServer->HasClientsConnected();
+      bool const bIsBookkeepingCatchUpCase = Server.IsSynchronousModeActive() && (!CurrentSettings.FixedDeltaSeconds || !CurrentSettings.bSynchronousMode);
+      if ( bIsSecondaryServerCase || bIsBookkeepingCatchUpCase )
       {
         // ensure the delta seconds are also considered in this run
         DeltaSeconds = Server.GetTickDeltaSeconds();
@@ -348,6 +363,11 @@ void FCarlaEngine::OnPreTick(UWorld *, ELevelTick TickType, float DeltaSeconds)
         CurrentSettings.FixedDeltaSeconds = DeltaSeconds;
         OnEpisodeSettingsChanged(CurrentSettings);
         CurrentEpisode->ApplySettings(CurrentSettings);
+
+        if ( bIsBookkeepingCatchUpCase && !bIsSecondaryServerCase )
+        {
+          Server.DisableSynchronousMode();
+        }
       }
     }
     else

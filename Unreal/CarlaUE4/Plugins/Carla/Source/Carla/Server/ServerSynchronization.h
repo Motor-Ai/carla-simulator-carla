@@ -97,16 +97,28 @@ public:
     LogSynchronizationMap("Disconnect client end");
   }
 
-  void EnableSynchronousMode(carla::rpc::synchronization_client_id_type const &ClientId, 
+  /** @brief Enable synchronous mode for a participant.
+   *
+   *  The participant is marked as *pending* (Confirmed=false) rather than immediately
+   *  constraining the tick barrier: GetTargetSynchronizationTime() only lets a Confirmed
+   *  participant hold back the world. Confirmed only becomes true once the participant
+   *  actually ticks (UpdateSynchronizationWindow(), i.e. a real call_tick()). This means a
+   *  participant that enables synchronous mode and then never ticks again - whether because
+   *  it crashed, was never a real client to begin with (e.g. an internal call made outside of
+   *  any real client session), or simply hasn't sent its first tick yet - can never freeze the
+   *  world: it is inert until it proves itself. No timeout is needed to recover from this case.
+   */
+  void EnableSynchronousMode(carla::rpc::synchronization_client_id_type const &ClientId,
                     carla::rpc::synchronization_participant_id_type const &ParticipantId = carla::rpc::ALL_PARTICIPANTS) {
 
     std::lock_guard<std::mutex> SyncLock(SynchronizationMutex);
-    
+
     for(auto &SynchronizationWindow: SynchronizationWindowMap) {
-      if ( (ClientId == SynchronizationWindow.first) && 
+      if ( (ClientId == SynchronizationWindow.first) &&
            (( ParticipantId == carla::rpc::ALL_PARTICIPANTS ) || ( SynchronizationWindow.second.ParticipantId == ParticipantId )) &&
           (SynchronizationWindow.second.TargetGameTime <= carla::rpc::NO_SYNC_TARGET_GAME_TIME))  {
         SynchronizationWindow.second.TargetGameTime = carla::rpc::BLOCKING_TARGET_GAME_TIME;
+        SynchronizationWindow.second.Confirmed = false;
         SyncStateChanged=true;
       }
     }
@@ -154,7 +166,10 @@ public:
 
     carla::rpc::synchronization_target_game_time TargetGameTime = CurrentGameTime+RequestedDltaTime;
     for(auto const &SynchronizationWindow: SynchronizationWindowMap) {
-      if ( (SynchronizationWindow.second.TargetGameTime > carla::rpc::NO_SYNC_TARGET_GAME_TIME) && (SynchronizationWindow.second.TargetGameTime < TargetGameTime) ) {
+      // Only a Confirmed participant (one that has actually ticked at least once since being
+      // enabled) is allowed to constrain the barrier - see EnableSynchronousMode()'s comment.
+      if ( SynchronizationWindow.second.Confirmed &&
+           (SynchronizationWindow.second.TargetGameTime > carla::rpc::NO_SYNC_TARGET_GAME_TIME) && (SynchronizationWindow.second.TargetGameTime < TargetGameTime) ) {
         if (LogOutput) {
           UE_LOG(LogCarla, Verbose, TEXT("ServerSynchronization::GetTargetSynchronizationTime[%s:%u] = %f"), UTF8_TO_TCHAR(SynchronizationWindow.first.c_str()), SynchronizationWindow.second.ParticipantId, SynchronizationWindow.second.TargetGameTime);
         }
@@ -183,6 +198,7 @@ public:
           if (SynchronizationWindowIter->second.ParticipantId == ParticipantId ) {
             ParticipantFound=true;
             SynchronizationWindowIter->second.TargetGameTime = TargetGameTime;
+            SynchronizationWindowIter->second.Confirmed = true;
             UE_LOG(LogCarla, Verbose, TEXT("ServerSynchronization::UpdateSynchronizationWindow[%s:%u] = %f"), UTF8_TO_TCHAR(ClientId.c_str()), ParticipantId, TargetGameTime);
           }
       }
@@ -196,6 +212,7 @@ public:
       for (auto &SynchronizationWindow: SynchronizationWindowMap) {
         if (SynchronizationWindow.second.TargetGameTime > carla::rpc::NO_SYNC_TARGET_GAME_TIME) {
           SynchronizationWindow.second.TargetGameTime = TargetGameTime;
+          SynchronizationWindow.second.Confirmed = true;
           UE_LOG(LogCarla, Verbose, TEXT("ServerSynchronization::UpdateSynchronizationWindow[%s:%u] = %f FORCE"), UTF8_TO_TCHAR(SynchronizationWindow.first.c_str()), SynchronizationWindow.second.ParticipantId, TargetGameTime);
         }
       }
@@ -235,6 +252,10 @@ private:
   struct SynchonizationWindow{
     carla::rpc::synchronization_participant_id_type ParticipantId;
     carla::rpc::synchronization_target_game_time TargetGameTime{carla::rpc::NO_SYNC_TARGET_GAME_TIME};
+    // Set once this participant has actually ticked (UpdateSynchronizationWindow()) since being
+    // enabled. Only a Confirmed participant may constrain GetTargetSynchronizationTime()'s
+    // barrier - see EnableSynchronousMode()'s comment for why.
+    bool Confirmed{false};
   };
 
   std::map<carla::rpc::synchronization_client_id_type, carla::rpc::synchronization_participant_id_type> ParticipantIdMaxMap;
