@@ -47,6 +47,7 @@ namespace rpc {
     RailTrack    =   27u,
     GuardRail    =   28u,
     Trailer      =   29u,
+    Particle     =   30u,
 
     Any          =  0xFF
   };
@@ -89,6 +90,8 @@ namespace std {
       case carla::rpc::CityObjectLabel::Bridge: return "Bridge";
       case carla::rpc::CityObjectLabel::RailTrack: return "RailTrack";
       case carla::rpc::CityObjectLabel::GuardRail: return "GuardRail";
+      case carla::rpc::CityObjectLabel::Trailer: return "Trailer";
+      case carla::rpc::CityObjectLabel::Particle: return "Particle";
       case carla::rpc::CityObjectLabel::Any: return "Any";
       default: return "Unknown";
     }
