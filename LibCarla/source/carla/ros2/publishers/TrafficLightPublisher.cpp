@@ -4,6 +4,8 @@
 
 #include "TrafficLightPublisher.h"
 
+#include <cstring>
+
 #include "carla/ros2/impl/DdsPublisherImpl.h"
 
 namespace carla {
@@ -65,6 +67,8 @@ void TrafficLightPublisher::UpdateTrafficLight(std::shared_ptr<const carla::ros2
     _traffic_light_info_initialized = true;
     _traffic_light_info.id(object->actor_id());
     _traffic_light_info.transform(object->Transform().pose());
+    const auto &sign_id = actor_dynamic_state.state.traffic_light_data.sign_id;
+    _traffic_light_info.xodr_signal_id(std::string(sign_id, strnlen(sign_id, sizeof(sign_id))));
     // trigger volume
     auto traffic_light_actor_definition = std::dynamic_pointer_cast<carla::ros2::types::TrafficLightActorDefinition>(_actor_name_definition);
     if (traffic_light_actor_definition!=nullptr)

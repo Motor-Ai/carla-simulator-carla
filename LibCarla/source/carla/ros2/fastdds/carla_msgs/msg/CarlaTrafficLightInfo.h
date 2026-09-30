@@ -209,11 +209,39 @@ public:
      */
     eProsima_user_DllExport carla_msgs::msg::CarlaBoundingBox& trigger_volume();
 
+
+    /*!
+     * @brief This function copies the value in member xodr_signal_id
+     * @param _xodr_signal_id New value to be copied in member xodr_signal_id
+     */
+    eProsima_user_DllExport void xodr_signal_id(
+            const std::string& _xodr_signal_id);
+
+    /*!
+     * @brief This function moves the value in member xodr_signal_id
+     * @param _xodr_signal_id New value to be moved in member xodr_signal_id
+     */
+    eProsima_user_DllExport void xodr_signal_id(
+            std::string&& _xodr_signal_id);
+
+    /*!
+     * @brief This function returns a constant reference to member xodr_signal_id
+     * @return Constant reference to member xodr_signal_id
+     */
+    eProsima_user_DllExport const std::string& xodr_signal_id() const;
+
+    /*!
+     * @brief This function returns a reference to member xodr_signal_id
+     * @return Reference to member xodr_signal_id
+     */
+    eProsima_user_DllExport std::string& xodr_signal_id();
+
 private:
 
     uint32_t m_id{0};
     geometry_msgs::msg::Pose m_transform;
     carla_msgs::msg::CarlaBoundingBox m_trigger_volume;
+    std::string m_xodr_signal_id;
 
 };
 

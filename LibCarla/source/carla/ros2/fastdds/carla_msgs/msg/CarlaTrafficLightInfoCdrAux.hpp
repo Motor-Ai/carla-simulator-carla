@@ -24,7 +24,7 @@
 
 #include "CarlaTrafficLightInfo.h"
 
-constexpr uint32_t carla_msgs_msg_CarlaTrafficLightInfo_max_cdr_typesize {144UL};
+constexpr uint32_t carla_msgs_msg_CarlaTrafficLightInfo_max_cdr_typesize {404UL};
 constexpr uint32_t carla_msgs_msg_CarlaTrafficLightInfo_max_key_cdr_typesize {0UL};
 
 

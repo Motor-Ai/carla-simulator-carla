@@ -57,6 +57,7 @@ CarlaTrafficLightInfo::CarlaTrafficLightInfo(
     m_id = x.m_id;
     m_transform = x.m_transform;
     m_trigger_volume = x.m_trigger_volume;
+    m_xodr_signal_id = x.m_xodr_signal_id;
 }
 
 CarlaTrafficLightInfo::CarlaTrafficLightInfo(
@@ -65,6 +66,7 @@ CarlaTrafficLightInfo::CarlaTrafficLightInfo(
     m_id = x.m_id;
     m_transform = std::move(x.m_transform);
     m_trigger_volume = std::move(x.m_trigger_volume);
+    m_xodr_signal_id = std::move(x.m_xodr_signal_id);
 }
 
 CarlaTrafficLightInfo& CarlaTrafficLightInfo::operator =(
@@ -74,6 +76,7 @@ CarlaTrafficLightInfo& CarlaTrafficLightInfo::operator =(
     m_id = x.m_id;
     m_transform = x.m_transform;
     m_trigger_volume = x.m_trigger_volume;
+    m_xodr_signal_id = x.m_xodr_signal_id;
     return *this;
 }
 
@@ -84,6 +87,7 @@ CarlaTrafficLightInfo& CarlaTrafficLightInfo::operator =(
     m_id = x.m_id;
     m_transform = std::move(x.m_transform);
     m_trigger_volume = std::move(x.m_trigger_volume);
+    m_xodr_signal_id = std::move(x.m_xodr_signal_id);
     return *this;
 }
 
@@ -92,7 +96,8 @@ bool CarlaTrafficLightInfo::operator ==(
 {
     return (m_id == x.m_id &&
            m_transform == x.m_transform &&
-           m_trigger_volume == x.m_trigger_volume);
+           m_trigger_volume == x.m_trigger_volume &&
+           m_xodr_signal_id == x.m_xodr_signal_id);
 }
 
 bool CarlaTrafficLightInfo::operator !=(
@@ -205,6 +210,45 @@ const carla_msgs::msg::CarlaBoundingBox& CarlaTrafficLightInfo::trigger_volume()
 carla_msgs::msg::CarlaBoundingBox& CarlaTrafficLightInfo::trigger_volume()
 {
     return m_trigger_volume;
+}
+
+
+/*!
+ * @brief This function copies the value in member xodr_signal_id
+ * @param _xodr_signal_id New value to be copied in member xodr_signal_id
+ */
+void CarlaTrafficLightInfo::xodr_signal_id(
+        const std::string& _xodr_signal_id)
+{
+    m_xodr_signal_id = _xodr_signal_id;
+}
+
+/*!
+ * @brief This function moves the value in member xodr_signal_id
+ * @param _xodr_signal_id New value to be moved in member xodr_signal_id
+ */
+void CarlaTrafficLightInfo::xodr_signal_id(
+        std::string&& _xodr_signal_id)
+{
+    m_xodr_signal_id = std::move(_xodr_signal_id);
+}
+
+/*!
+ * @brief This function returns a constant reference to member xodr_signal_id
+ * @return Constant reference to member xodr_signal_id
+ */
+const std::string& CarlaTrafficLightInfo::xodr_signal_id() const
+{
+    return m_xodr_signal_id;
+}
+
+/*!
+ * @brief This function returns a reference to member xodr_signal_id
+ * @return Reference to member xodr_signal_id
+ */
+std::string& CarlaTrafficLightInfo::xodr_signal_id()
+{
+    return m_xodr_signal_id;
 }
 
 
