@@ -45,6 +45,9 @@ struct FWheelTelemetryData
 
   UPROPERTY(Category = "Wheel Telemetry Data", EditAnywhere, BlueprintReadWrite)
   float NormalizedLatForce  = 0.0f;
+
+  UPROPERTY(Category = "Wheel Telemetry Data", EditAnywhere, BlueprintReadWrite)
+  float SteerAngle = 0.0f;  // [deg]
 };
 
 USTRUCT(BlueprintType)

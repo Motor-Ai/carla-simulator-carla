@@ -132,7 +132,8 @@ namespace rpc {
         << ", long_force=" << std::to_string(telemetry.long_force)
         << ", lat_force=" << std::to_string(telemetry.lat_force)
         << ", normalized_long_force=" << std::to_string(telemetry.normalized_long_force)
-        << ", normalized_lat_force=" << std::to_string(telemetry.normalized_lat_force) << ')';
+        << ", normalized_lat_force=" << std::to_string(telemetry.normalized_lat_force)
+        << ", steer_angle=" << std::to_string(telemetry.steer_angle) << ')';
     return out;
   }
 
@@ -595,7 +596,7 @@ void export_control() {
   ;
 
   class_<cr::WheelTelemetryData>("WheelTelemetryData")
-    .def(init<float, float, float, float, float, float, float, float, float, float, float>(
+    .def(init<float, float, float, float, float, float, float, float, float, float, float, float>(
         (arg("tire_friction")=0.0f,
          arg("lat_slip")=0.0f,
          arg("long_slip")=0.0f,
@@ -606,7 +607,8 @@ void export_control() {
          arg("long_force")=0.0f,
          arg("lat_force")=0.0f,
          arg("normalized_long_force")=0.0f,
-         arg("normalized_lat_force")=0.0f)))
+         arg("normalized_lat_force")=0.0f,
+         arg("steer_angle")=0.0f)))
     .def_readwrite("tire_friction", &cr::WheelTelemetryData::tire_friction)
     .def_readwrite("lat_slip", &cr::WheelTelemetryData::lat_slip)
     .def_readwrite("long_slip", &cr::WheelTelemetryData::long_slip)
@@ -618,6 +620,7 @@ void export_control() {
     .def_readwrite("lat_force", &cr::WheelTelemetryData::lat_force)
     .def_readwrite("normalized_long_force", &cr::WheelTelemetryData::normalized_long_force)
     .def_readwrite("normalized_lat_force", &cr::WheelTelemetryData::normalized_lat_force)
+    .def_readwrite("steer_angle", &cr::WheelTelemetryData::steer_angle)
     .def("__eq__", &cr::WheelTelemetryData::operator==)
     .def("__ne__", &cr::WheelTelemetryData::operator!=)
     .def(self_ns::str(self_ns::self))

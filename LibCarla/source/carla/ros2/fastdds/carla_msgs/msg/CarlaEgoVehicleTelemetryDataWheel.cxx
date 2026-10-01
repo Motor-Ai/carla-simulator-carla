@@ -65,6 +65,7 @@ CarlaEgoVehicleTelemetryDataWheel::CarlaEgoVehicleTelemetryDataWheel(
     m_lat_force = x.m_lat_force;
     m_normalized_long_force = x.m_normalized_long_force;
     m_normalized_lat_force = x.m_normalized_lat_force;
+    m_steer_angle = x.m_steer_angle;
 }
 
 CarlaEgoVehicleTelemetryDataWheel::CarlaEgoVehicleTelemetryDataWheel(
@@ -81,6 +82,7 @@ CarlaEgoVehicleTelemetryDataWheel::CarlaEgoVehicleTelemetryDataWheel(
     m_lat_force = x.m_lat_force;
     m_normalized_long_force = x.m_normalized_long_force;
     m_normalized_lat_force = x.m_normalized_lat_force;
+    m_steer_angle = x.m_steer_angle;
 }
 
 CarlaEgoVehicleTelemetryDataWheel& CarlaEgoVehicleTelemetryDataWheel::operator =(
@@ -98,6 +100,7 @@ CarlaEgoVehicleTelemetryDataWheel& CarlaEgoVehicleTelemetryDataWheel::operator =
     m_lat_force = x.m_lat_force;
     m_normalized_long_force = x.m_normalized_long_force;
     m_normalized_lat_force = x.m_normalized_lat_force;
+    m_steer_angle = x.m_steer_angle;
     return *this;
 }
 
@@ -116,6 +119,7 @@ CarlaEgoVehicleTelemetryDataWheel& CarlaEgoVehicleTelemetryDataWheel::operator =
     m_lat_force = x.m_lat_force;
     m_normalized_long_force = x.m_normalized_long_force;
     m_normalized_lat_force = x.m_normalized_lat_force;
+    m_steer_angle = x.m_steer_angle;
     return *this;
 }
 
@@ -132,7 +136,8 @@ bool CarlaEgoVehicleTelemetryDataWheel::operator ==(
            m_long_force == x.m_long_force &&
            m_lat_force == x.m_lat_force &&
            m_normalized_long_force == x.m_normalized_long_force &&
-           m_normalized_lat_force == x.m_normalized_lat_force);
+           m_normalized_lat_force == x.m_normalized_lat_force &&
+           m_steer_angle == x.m_steer_angle);
 }
 
 bool CarlaEgoVehicleTelemetryDataWheel::operator !=(
@@ -457,6 +462,35 @@ float CarlaEgoVehicleTelemetryDataWheel::normalized_lat_force() const
 float& CarlaEgoVehicleTelemetryDataWheel::normalized_lat_force()
 {
     return m_normalized_lat_force;
+}
+
+
+/*!
+ * @brief This function sets a value in member steer_angle
+ * @param _steer_angle New value for member steer_angle
+ */
+void CarlaEgoVehicleTelemetryDataWheel::steer_angle(
+        float _steer_angle)
+{
+    m_steer_angle = _steer_angle;
+}
+
+/*!
+ * @brief This function returns the value of member steer_angle
+ * @return Value of member steer_angle
+ */
+float CarlaEgoVehicleTelemetryDataWheel::steer_angle() const
+{
+    return m_steer_angle;
+}
+
+/*!
+ * @brief This function returns a reference to member steer_angle
+ * @return Reference to member steer_angle
+ */
+float& CarlaEgoVehicleTelemetryDataWheel::steer_angle()
+{
+    return m_steer_angle;
 }
 
 

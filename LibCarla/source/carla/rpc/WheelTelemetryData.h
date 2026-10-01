@@ -27,7 +27,8 @@ namespace rpc {
     float long_force,
     float lat_force,
     float normalized_long_force,
-    float normalized_lat_force)
+    float normalized_lat_force,
+    float steer_angle = 0.0f)
       : tire_friction(tire_friction),
         lat_slip(lat_slip),
         long_slip(long_slip),
@@ -38,7 +39,8 @@ namespace rpc {
         long_force(long_force),
         lat_force(lat_force),
         normalized_long_force(normalized_long_force),
-        normalized_lat_force(normalized_lat_force) {}
+        normalized_lat_force(normalized_lat_force),
+        steer_angle(steer_angle) {}
 
     float tire_friction = 0.0f;
     float lat_slip = 0.0f;
@@ -51,6 +53,7 @@ namespace rpc {
     float lat_force = 0.0f;
     float normalized_long_force = 0.0f;
     float normalized_lat_force = 0.0f;
+    float steer_angle = 0.0f;  // [deg]
 
     bool operator!=(const WheelTelemetryData &rhs) const {
       return
@@ -64,7 +67,8 @@ namespace rpc {
       long_force != rhs.long_force ||
       lat_force != rhs.lat_force ||
       normalized_long_force != rhs.normalized_long_force ||
-      normalized_lat_force != rhs.normalized_lat_force;
+      normalized_lat_force != rhs.normalized_lat_force ||
+      steer_angle != rhs.steer_angle;
     }
 
     bool operator==(const WheelTelemetryData &rhs) const {
@@ -83,7 +87,8 @@ namespace rpc {
         long_force(TelemetryData.LongForce),
         lat_force(TelemetryData.LatForce),
         normalized_long_force(TelemetryData.NormalizedLongForce),
-        normalized_lat_force(TelemetryData.NormalizedLatForce) {}
+        normalized_lat_force(TelemetryData.NormalizedLatForce),
+        steer_angle(TelemetryData.SteerAngle) {}
 
     operator FWheelTelemetryData() const {
       FWheelTelemetryData TelemetryData;
@@ -98,6 +103,7 @@ namespace rpc {
       TelemetryData.LatForce = lat_force;
       TelemetryData.NormalizedLongForce = normalized_long_force;
       TelemetryData.NormalizedLatForce = normalized_lat_force;
+      TelemetryData.SteerAngle = steer_angle;
 
       return TelemetryData;
     }
@@ -113,7 +119,8 @@ namespace rpc {
     long_force,
     lat_force,
     normalized_long_force,
-    normalized_lat_force)
+    normalized_lat_force,
+    steer_angle)
   };
 
 } // namespace rpc

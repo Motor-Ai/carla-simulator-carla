@@ -87,6 +87,9 @@ eProsima_user_DllExport size_t calculate_serialized_size(
         calculated_size += calculator.calculate_member_serialized_size(eprosima::fastcdr::MemberId(10),
                 data.normalized_lat_force(), current_alignment);
 
+        calculated_size += calculator.calculate_member_serialized_size(eprosima::fastcdr::MemberId(11),
+                data.steer_angle(), current_alignment);
+
 
     calculated_size += calculator.end_calculate_type_serialized_size(previous_encoding, current_alignment);
 
@@ -118,6 +121,7 @@ eProsima_user_DllExport void serialize(
         << eprosima::fastcdr::MemberId(8) << data.lat_force()
         << eprosima::fastcdr::MemberId(9) << data.normalized_long_force()
         << eprosima::fastcdr::MemberId(10) << data.normalized_lat_force()
+        << eprosima::fastcdr::MemberId(11) << data.steer_angle()
 ;
     scdr.end_serialize_type(current_state);
 }
@@ -179,6 +183,10 @@ eProsima_user_DllExport void deserialize(
 
                                         case 10:
                                                 dcdr >> data.normalized_lat_force();
+                                            break;
+
+                                        case 11:
+                                                dcdr >> data.steer_angle();
                                             break;
 
                     default:

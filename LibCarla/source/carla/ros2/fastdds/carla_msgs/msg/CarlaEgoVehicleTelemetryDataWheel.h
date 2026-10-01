@@ -353,6 +353,26 @@ public:
      */
     eProsima_user_DllExport float& normalized_lat_force();
 
+
+    /*!
+     * @brief This function sets a value in member steer_angle
+     * @param _steer_angle New value for member steer_angle
+     */
+    eProsima_user_DllExport void steer_angle(
+            float _steer_angle);
+
+    /*!
+     * @brief This function returns the value of member steer_angle
+     * @return Value of member steer_angle
+     */
+    eProsima_user_DllExport float steer_angle() const;
+
+    /*!
+     * @brief This function returns a reference to member steer_angle
+     * @return Reference to member steer_angle
+     */
+    eProsima_user_DllExport float& steer_angle();
+
 private:
 
     float m_tire_friction{0.0};
@@ -366,6 +386,7 @@ private:
     float m_lat_force{0.0};
     float m_normalized_long_force{0.0};
     float m_normalized_lat_force{0.0};
+    float m_steer_angle{0.0};
 
 };
 
