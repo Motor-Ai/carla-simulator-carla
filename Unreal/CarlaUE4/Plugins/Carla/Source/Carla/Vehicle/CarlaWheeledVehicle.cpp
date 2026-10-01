@@ -193,6 +193,14 @@ void ACarlaWheeledVehicle::BeginPlay()
 
     MovementComponent->WheelSetups = NewWheelSetups;
 
+  #ifdef WHEEL_SWEEP_ENABLED
+    // Rebuild physics so a blueprint-set UseSweepWheelCollision takes effect (only for vehicles that set it).
+    if (MovementComponent->UseSweepWheelCollision && !IsTwoWheeledVehicle())
+    {
+      MovementComponent->RecreatePhysicsState();
+    }
+  #endif
+
     LastAppliedPhysicsControl = GetVehiclePhysicsControl();
 
     // Update physics in the Ackermann Controller
@@ -499,6 +507,11 @@ FVehiclePhysicsControl ACarlaWheeledVehicle::GetVehiclePhysicsControl() const
 
     PhysicsControl.Wheels = Wheels;
 
+  #ifdef WHEEL_SWEEP_ENABLED
+    // Report the real wheel-collision mode so restoring LastAppliedPhysicsControl keeps it.
+    PhysicsControl.UseSweepWheelCollision = Vehicle4W->UseSweepWheelCollision;
+  #endif
+
   } else {
     UWheeledVehicleMovementComponentNW *VehicleNW = Cast<UWheeledVehicleMovementComponentNW>(
       GetVehicleMovement());
@@ -582,6 +595,10 @@ FVehiclePhysicsControl ACarlaWheeledVehicle::GetVehiclePhysicsControl() const
     }
 
     PhysicsControl.Wheels = Wheels;
+
+  #ifdef WHEEL_SWEEP_ENABLED
+    PhysicsControl.UseSweepWheelCollision = VehicleNW->UseSweepWheelCollision;
+  #endif
 
   }
   return PhysicsControl;
