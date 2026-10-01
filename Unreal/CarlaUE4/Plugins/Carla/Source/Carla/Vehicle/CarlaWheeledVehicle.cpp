@@ -884,6 +884,7 @@ FVehicleTelemetryData ACarlaWheeledVehicle::GetVehicleTelemetryData() const
     WheelTelemetryData.LatSlip = FMath::RadiansToDegrees(WheelsStates[w].lateralSlip);
     WheelTelemetryData.LongSlip = WheelsStates[w].longitudinalSlip;
     WheelTelemetryData.Omega = MovementComponent->PVehicle->mWheelsDynData.getWheelRotationSpeed(w);
+    WheelTelemetryData.SteerAngle = FMath::RadiansToDegrees(WheelsStates[w].steerAngle);
 
     UVehicleWheel* Wheel = MovementComponent->Wheels[w];
     WheelTelemetryData.TireLoad = Wheel->DebugTireLoad / 100.0f;

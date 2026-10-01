@@ -24,7 +24,7 @@
 
 #include "CarlaEgoVehicleTelemetryDataWheel.h"
 
-constexpr uint32_t carla_msgs_msg_CarlaEgoVehicleTelemetryDataWheel_max_cdr_typesize {48UL};
+constexpr uint32_t carla_msgs_msg_CarlaEgoVehicleTelemetryDataWheel_max_cdr_typesize {52UL};
 constexpr uint32_t carla_msgs_msg_CarlaEgoVehicleTelemetryDataWheel_max_key_cdr_typesize {0UL};
 
 

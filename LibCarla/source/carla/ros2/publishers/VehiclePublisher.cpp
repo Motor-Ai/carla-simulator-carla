@@ -90,6 +90,7 @@ void VehiclePublisher::UpdateSensorDataPreAction() {
         wheel_msg.lat_force(wheel.lat_force);
         wheel_msg.normalized_long_force(wheel.normalized_long_force);
         wheel_msg.normalized_lat_force(wheel.normalized_lat_force);
+        wheel_msg.steer_angle(wheel.steer_angle);
         _vehicle_telemetry_publisher->Message().wheels().push_back(wheel_msg);
       }
 
