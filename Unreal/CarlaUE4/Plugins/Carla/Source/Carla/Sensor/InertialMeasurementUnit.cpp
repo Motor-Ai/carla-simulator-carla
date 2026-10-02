@@ -185,7 +185,21 @@ float AInertialMeasurementUnit::ComputeCompass()
 
 void AInertialMeasurementUnit::PostPhysTick(UWorld *World, ELevelTick TickType, float DeltaTime)
 {
-  carla::geom::Vector3D Accelerometer = ComputeAccelerometer(DeltaTime);
+  // DeltaTime is the tick of the world. A sensor with a sensor_tick is sampled less often, and the
+  // finite differences of the accelerometer need the real spacing of its samples.
+  const double Timestamp = GetEpisode().GetElapsedGameTime();
+  const float SampleDeltaTime = LastSampleTimestamp < 0.0
+      ? DeltaTime
+      : static_cast<float>(Timestamp - LastSampleTimestamp);
+  if (LastSampleTimestamp < 0.0)
+  {
+    // No history yet: start from the current position, so the first differences are zero.
+    PrevLocation = { GetActorLocation(), GetActorLocation() };
+    PrevDeltaTime = SampleDeltaTime;
+  }
+  LastSampleTimestamp = Timestamp;
+
+  carla::geom::Vector3D Accelerometer = ComputeAccelerometer(SampleDeltaTime);
   carla::geom::Vector3D Gyroscope = ComputeGyroscope();
   float Compass = ComputeCompass();
 

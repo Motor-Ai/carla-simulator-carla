@@ -86,4 +86,7 @@ private:
   /// Used to compute the acceleration
   float PrevDeltaTime;
 
+  /// Game time of the last sample [s]; negative until the first one.
+  double LastSampleTimestamp = -1.0;
+
 };
