@@ -106,6 +106,15 @@ void UeWorldPublisher::Cleanup() {
   _traffic_lights.clear();
   _traffic_signs.clear();
   _other_actors.clear();
+  // The dispatcher keeps the sessions of the stream states that survive a map load (e.g. the
+  // world observer). Disconnect them, otherwise the next world publisher registers a second
+  // session on the same stream and every frame is delivered twice.
+  for (auto &ue_sensor : _ue_sensors) {
+    if (ue_sensor.second.session != nullptr) {
+      _dispatcher->DeregisterSession(ue_sensor.second.session);
+      ue_sensor.second.session.reset();
+    }
+  }
   _ue_sensors.clear();
 }
 
