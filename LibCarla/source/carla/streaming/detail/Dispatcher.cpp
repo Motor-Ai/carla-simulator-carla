@@ -6,6 +6,8 @@
 
 #include "carla/streaming/detail/Dispatcher.h"
 
+#include <chrono>
+
 #include "carla/Exception.h"
 #include "carla/Logging.h"
 #include "carla/streaming/detail/MultiStreamState.h"
@@ -87,7 +89,19 @@ namespace detail {
         return true;
       }
     }
-    log_error("Invalid session: no stream available with id", session->get_stream_id());
+    // A client of a stream that no longer exists keeps asking for it; one message per second,
+    // with the number of the suppressed ones, instead of one per request.
+    static auto last_logged = std::chrono::steady_clock::time_point{};
+    static size_t suppressed = 0;
+    const auto now = std::chrono::steady_clock::now();
+    if (now - last_logged >= std::chrono::seconds(1)) {
+      log_error("Invalid session: no stream available with id", session->get_stream_id(),
+                "(", suppressed, "more requests since the last message)");
+      last_logged = now;
+      suppressed = 0;
+    } else {
+      ++suppressed;
+    }
     return false;
   }
 

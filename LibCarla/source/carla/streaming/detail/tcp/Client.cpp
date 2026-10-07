@@ -176,12 +176,19 @@ namespace tcp {
           // Move the buffer to the callback function and start reading the next
           // piece of data.
           // log_debug("streaming client: success reading data, calling the callback");
+          _received_data = true;
           self->_callback(message->pop());
           ReadData();
         } else {
-          // As usual, if anything fails start over from the very top.
           log_debug("streaming client: failed to read data:", ec.message());
-          Connect();
+          if (_received_data.exchange(false)) {
+            // The connection worked and then broke: start over from the very top.
+            Connect();
+          } else {
+            // The server closed the connection before any data, as it does for a stream that
+            // does not exist: reconnecting at once would be a busy loop that floods the server.
+            Reconnect();
+          }
         }
       };
 

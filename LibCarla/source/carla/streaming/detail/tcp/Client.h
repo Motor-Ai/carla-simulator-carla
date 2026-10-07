@@ -77,6 +77,11 @@ namespace tcp {
     std::shared_ptr<BufferPool> _buffer_pool;
 
     std::atomic_bool _done{false};
+
+    /// Whether the current connection has delivered a message. A connection that the server
+    /// closed before that, for example for a stream that does not exist, is retried after a delay
+    /// instead of at once.
+    std::atomic_bool _received_data{false};
   };
 
 } // namespace tcp
