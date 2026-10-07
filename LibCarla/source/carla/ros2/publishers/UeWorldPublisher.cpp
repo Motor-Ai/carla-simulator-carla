@@ -404,7 +404,12 @@ void UeWorldPublisher::CreateSensorUePublisher(UeSensor &sensor) {
     case types::PublisherSensorType::CameraGBufferUint8:
     case types::PublisherSensorType::CameraGBufferFloat:
     case types::PublisherSensorType::LaneInvasionSensor:
-    case types::PublisherSensorType::ObstacleDetectionSensor:
+    case types::PublisherSensorType::ObstacleDetectionSensor: {
+      // These sensors have no ROS 2 publisher by design; clients of the API read them directly.
+      sensor.publisher_expected = false;
+      log_info("UeWorldPublisher::CreateSensorUePublisher[", std::to_string(*sensor.sensor_actor_definition()),
+               "]: this sensor type has no ROS 2 publisher");
+    } break;
     default: {
       sensor.publisher_expected = false;
       log_error("UeWorldPublisher::CreateSensorUePublisher[", std::to_string(*sensor.sensor_actor_definition()),
